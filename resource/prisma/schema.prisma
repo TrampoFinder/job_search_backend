@@ -18,7 +18,7 @@ model Job {
     title       String
     description String
     status JobStatus
-    link String
+    url String
     createdAt DateTime
     updatedAt DateTime
     deletedAt DateTime?
