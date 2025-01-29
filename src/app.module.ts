@@ -6,6 +6,7 @@ import {
   ConfigModuleOptions as NestConfigModuleOptions,
 } from '@nestjs/config';
 import { factory } from './util/config.factory';
+import { JobController } from './controller/job.controller';
 
 @Module({
   imports: [
@@ -14,8 +15,8 @@ import { factory } from './util/config.factory';
       load: [factory],
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, JobController],
+  providers: [AppService, JobService],
 })
 export class AppModule {
   static forRoot(options?: NestConfigModuleOptions): DynamicModule {
