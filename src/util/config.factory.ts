@@ -14,13 +14,6 @@ export const factory = (): Config => {
       url: process.env.DATABASE_URL,
       username: process.env.DATABASE_USERNAME,
     },
-    movieDb: {
-      apiToken: process.env.MOVIEDB_API_TOKEN,
-      url: process.env.MOVIEDB_BASE_URL,
-    },
-    billingApi: {
-      url: process.env.BILLING_API_URL,
-    },
   });
 
   if (result.success) {
