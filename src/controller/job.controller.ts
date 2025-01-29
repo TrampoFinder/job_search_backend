@@ -22,7 +22,7 @@ export class JobController {
     return this.jobManagementService.getAllJobs();
   }
   @Post('/register')
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(new RestResponseInterceptor(CreateJobResponseDto))
   async create(
     @Body() createJobRequestDto: CreateJobRequestDto,
