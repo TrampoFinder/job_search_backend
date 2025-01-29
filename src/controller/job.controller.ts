@@ -2,45 +2,48 @@ import {
   Controller,
   Get,
   Post,
-  //Delete,
   Body,
-  //Param,
   BadRequestException,
-  InternalServerErrorException,
+  ValidationPipe,
+  UsePipes,
+  UseInterceptors,
 } from '@nestjs/common';
+import { CreateJobRequestDto } from '@src/dto/request/create-job-request.dto';
+import { CreateJobResponseDto } from '@src/dto/response/create-job-response.dto';
+import { RestResponseInterceptor } from '@src/interceptor/rest-response.interceptor';
 import JobModel from '@src/model/job.model';
-import { JobService } from '@src/service/job.service';
+import { JobManagementService } from '@src/service/job-management.service';
 
-@Controller('job_search')
+@Controller('/job_management')
 export class JobController {
-  constructor(private readonly jobService: JobService) {}
+  constructor(private readonly jobManagementService: JobManagementService) {}
   @Get()
   async listAll(): Promise<JobModel[]> {
-    return this.jobService.listAll();
+    return this.jobManagementService.getAllJobs();
   }
-  @Post()
-  async create(@Body() jobRequestDto: JobRequestDto): Promise<JobResponseDto> {
+  @Post('/register')
+  @UsePipes(new ValidationPipe())
+  @UseInterceptors(new RestResponseInterceptor(CreateJobResponseDto))
+  async create(
+    @Body() createJobRequestDto: CreateJobRequestDto,
+  ): Promise<CreateJobResponseDto> {
     try {
-      const createdJob = await this.jobService.save(jobRequestDto);
-      return createdJob;
+      const createdJob =
+        await this.jobManagementService.createJob(createJobRequestDto);
+
+      return {
+        id: createdJob.id,
+        title: createdJob.title,
+        description: createdJob.description,
+        url: createdJob.url,
+        createdAt: createdJob.createdAt,
+        updatedAt: createdJob.updatedAt,
+      };
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw new BadRequestException(error.message);
       }
-      throw new InternalServerErrorException();
+      throw error;
     }
   }
 }
-type JobRequestDto = {
-  title: string;
-  description: string;
-  link: string;
-};
-
-type JobResponseDto = {
-  id: string;
-  title: string;
-  description: string;
-  link: string;
-  status: string;
-};

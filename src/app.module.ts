@@ -1,12 +1,13 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import {
   ConfigModule as NestConfigModule,
   ConfigModuleOptions as NestConfigModuleOptions,
 } from '@nestjs/config';
 import { factory } from './util/config.factory';
 import { JobController } from './controller/job.controller';
+import { JobManagementService } from './service/job-management.service';
+import { PrismaService } from './prisma/prisma.service';
+import { JobRepository } from './repository/job.repository';
 
 @Module({
   imports: [
@@ -15,8 +16,8 @@ import { JobController } from './controller/job.controller';
       load: [factory],
     }),
   ],
-  controllers: [AppController, JobController],
-  providers: [AppService, JobService],
+  controllers: [JobController],
+  providers: [PrismaService, JobManagementService, JobRepository],
 })
 export class AppModule {
   static forRoot(options?: NestConfigModuleOptions): DynamicModule {
@@ -28,8 +29,8 @@ export class AppModule {
           load: options?.load ? [factory, ...options.load] : [factory],
         }),
       ],
-      controllers: [AppController],
-      providers: [AppService],
+      controllers: [JobController],
+      providers: [PrismaService, JobManagementService, JobRepository],
     };
   }
 }
