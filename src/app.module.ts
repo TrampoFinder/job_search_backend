@@ -3,11 +3,11 @@ import {
   ConfigModule as NestConfigModule,
   ConfigModuleOptions as NestConfigModuleOptions,
 } from '@nestjs/config';
-import { factory } from './util/config.factory';
-import { JobController } from './controller/job.controller';
-import { JobManagementService } from './service/job-management.service';
+import { factory } from './config/util/config.factory';
+import { JobController } from './job-management/controller/job.controller';
 import { PrismaService } from './prisma/prisma.service';
-import { JobRepository } from './repository/job.repository';
+import { JobManagementService } from './job-management/service/job-management.service';
+import { JobRepository } from './job-management/repository/job.repository';
 
 @Module({
   imports: [
