@@ -8,11 +8,11 @@ import {
   UsePipes,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateJobRequestDto } from '@src/dto/request/create-job-request.dto';
-import { CreateJobResponseDto } from '@src/dto/response/create-job-response.dto';
-import { RestResponseInterceptor } from '@src/interceptor/rest-response.interceptor';
-import JobModel from '@src/model/job.model';
-import { JobManagementService } from '@src/service/job-management.service';
+import { CreateJobRequestDto } from '@src/job-management/dto/request/create-job-request.dto';
+import { CreateJobResponseDto } from '@src/job-management/dto/response/create-job-response.dto';
+import { RestResponseInterceptor } from '@src/job-management/interceptor/rest-response.interceptor';
+import JobModel from '@src/job-management/model/job.model';
+import { JobManagementService } from '@src/job-management/service/job-management.service';
 
 @Controller('/job_management')
 export class JobController {

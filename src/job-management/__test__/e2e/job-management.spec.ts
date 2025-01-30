@@ -1,10 +1,10 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@src/app.module';
-import { JobRepository } from '@src/repository/job.repository';
+import { JobRepository } from '@src/job-management/repository/job.repository';
 import request from 'supertest';
 
-describe('ContentController (e2e)', () => {
+describe('JobController (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
   let jobRepository: JobRepository;
