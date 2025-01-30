@@ -1,22 +1,38 @@
-import JobModel from '@src/model/job.model';
-import { PrismaService } from '@src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@src/prisma/prisma.service';
+import { UserModel } from '../model/user.model';
+import { Prisma } from '@prisma/client';
+
+type QueryableFields = Prisma.$UserPayload['scalars'];
 
 @Injectable()
-export class JobRepository {
-  private readonly model: PrismaService['job'];
+export class UserRepository {
+  private readonly model: PrismaService['user'];
   constructor(prismaService: PrismaService) {
-    this.model = prismaService.job;
+    this.model = prismaService.user;
   }
-  getAllJobs = async (): Promise<JobModel[]> => {
-    return this.model.findMany();
+  findByOne = async (
+    fields: Partial<QueryableFields>,
+  ): Promise<UserModel | undefined> => {
+    try {
+      const user = await this.model.findFirst({ where: fields });
+      if (!user) {
+        return;
+      }
+      return Object.assign(this, user);
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
   };
 
-  save = async (data: JobModel): Promise<JobModel> => {
-    return await this.model.create({ data });
+  save = async (data: UserModel): Promise<UserModel> => {
+    try {
+      const user = await this.model.create({ data });
+      return user;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
   };
-
   async clear(): Promise<{ count: number }> {
     try {
       return await this.model.deleteMany();
