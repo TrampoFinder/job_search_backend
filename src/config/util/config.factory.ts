@@ -14,6 +14,9 @@ export const factory = (): Config => {
       url: process.env.DATABASE_URL,
       username: process.env.DATABASE_USERNAME,
     },
+    secret: {
+      key: process.env.SECRET_KEY,
+    },
   });
 
   if (result.success) {
