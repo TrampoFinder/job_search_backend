@@ -1,18 +1,19 @@
+import { Injectable } from '@nestjs/common';
+import { SignInRequestDto } from '../dto/request/sign-in-request.dto';
 import { UserUnauthorizedException } from '../exception/user-unauthorized.exception';
 import { UserRepository } from '../repository/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import crypto from 'crypto';
 
-export class AuthenticationService {
+@Injectable()
+export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtSerivce: JwtService,
   ) {}
 
-  signIn = async (
-    email: string,
-    password: string,
-  ): Promise<{ accessToken: string }> => {
+  signIn = async (data: SignInRequestDto): Promise<{ accessToken: string }> => {
+    const { email, password } = data;
     const user = await this.userRepository.findByOne({ email });
     if (!user || !this.comparePassword(password, user.password, user.salt)) {
       throw new UserUnauthorizedException('Invalid credentials!');

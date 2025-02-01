@@ -1,6 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '@src/app.module';
+import { JobManagementModule } from '@src/job-management/job-management.module';
 import { JobRepository } from '@src/job-management/repository/job.repository';
 import request from 'supertest';
 
@@ -11,7 +11,7 @@ describe('JobController (e2e)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [JobManagementModule],
     }).compile();
 
     app = module.createNestApplication();
@@ -34,7 +34,7 @@ describe('JobController (e2e)', () => {
     module.close();
   });
 
-  describe('/job_search (POST)', () => {
+  describe('/job-management (POST)', () => {
     it('create a job', async () => {
       const input = {
         title: 'Test Job',
@@ -43,7 +43,7 @@ describe('JobController (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/job_management/register')
+        .post('/job-management/register')
         .send(input)
         .expect(HttpStatus.CREATED)
         .expect((response) => {
@@ -62,7 +62,7 @@ describe('JobController (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/job_management/register')
+        .post('/job-management/register')
         .send(input)
         .expect(HttpStatus.BAD_REQUEST)
         .expect((response) => {
@@ -82,7 +82,7 @@ describe('JobController (e2e)', () => {
       url: 'republicarr.br',
     };
     await request(app.getHttpServer())
-      .post('/job_management/register')
+      .post('/job-management/register')
       .send(input)
       .expect(HttpStatus.BAD_REQUEST)
       .expect({
