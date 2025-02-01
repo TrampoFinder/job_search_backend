@@ -11,7 +11,12 @@ export const databaseSchema = z.object({
   username: z.string(),
 });
 
+export const secretKeySchema = z.object({
+  key: z.string(),
+});
+
 export const configSchema = z.object({
   env: environmentSchema,
   port: z.coerce.number().positive().int(),
+  secret: secretKeySchema,
 });
