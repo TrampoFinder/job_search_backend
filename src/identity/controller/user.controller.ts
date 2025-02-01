@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
@@ -21,7 +22,9 @@ export class UserController {
   @Post('register')
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(new RestResponseInterceptor(UserResponseDto))
-  async createUser(data: CreateUserRequestDto): Promise<UserResponseDto> {
+  async createUser(
+    @Body() data: CreateUserRequestDto,
+  ): Promise<UserResponseDto> {
     const user = await this.userManagementService.createUser(data);
     return {
       id: user.id,
