@@ -1,7 +1,14 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsDate, IsEmail, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
-export class CreateUserRequestDto {
+export class UserResponseDto {
   @IsUUID(4)
   @Expose()
   id: string;
@@ -23,15 +30,11 @@ export class CreateUserRequestDto {
   @Expose()
   email: string;
 
-  @IsString({ message: 'Must be a string' })
-  @Expose()
-  password: string;
-
   @IsBoolean({ message: 'Must be a boolean' })
   @Expose()
   isActive: boolean;
 
-  @IsBoolean({ message: 'Must be a boolean' })
+  @IsString({ message: 'Must be a string' })
   @Expose()
   role: string;
 
@@ -42,4 +45,9 @@ export class CreateUserRequestDto {
   @IsDate({ message: 'Must be a date' })
   @Expose()
   updatedAt: Date;
+
+  @IsOptional()
+  @IsDate({ message: 'Must be a date' })
+  @Expose()
+  deletedAt: Date | null;
 }

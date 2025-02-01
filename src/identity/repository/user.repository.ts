@@ -19,7 +19,7 @@ export class UserRepository {
       if (!user) {
         return;
       }
-      return Object.assign(this, user);
+      return user;
     } catch (error) {
       this.handleAndThrowError(error);
     }
@@ -33,13 +33,13 @@ export class UserRepository {
       this.handleAndThrowError(error);
     }
   };
-  async clear(): Promise<{ count: number }> {
+  clear = async (): Promise<{ count: number }> => {
     try {
       return await this.model.deleteMany();
     } catch (error) {
       this.handleAndThrowError(error);
     }
-  }
+  };
 
   private extractErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {
