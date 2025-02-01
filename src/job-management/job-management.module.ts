@@ -5,6 +5,8 @@ import { JobRepository } from './repository/job.repository';
 import { ConfigModule } from '@src/config/config.module';
 import { PrismaModule } from '@src/prisma/prisma.module';
 
+
+
 @Module({
   imports: [ConfigModule.forRoot(), PrismaModule],
   controllers: [JobController],
