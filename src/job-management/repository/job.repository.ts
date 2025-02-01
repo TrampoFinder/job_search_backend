@@ -17,13 +17,13 @@ export class JobRepository {
     return await this.model.create({ data });
   };
 
-  async clear(): Promise<{ count: number }> {
+  clear = async (): Promise<{ count: number }> => {
     try {
       return await this.model.deleteMany();
     } catch (error) {
       this.handleAndThrowError(error);
     }
-  }
+  };
 
   private extractErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {

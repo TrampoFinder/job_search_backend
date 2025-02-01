@@ -14,7 +14,7 @@ import { RestResponseInterceptor } from '@src/job-management/interceptor/rest-re
 import JobModel from '@src/job-management/model/job.model';
 import { JobManagementService } from '@src/job-management/service/job-management.service';
 
-@Controller('/job_management')
+@Controller('/job-management')
 export class JobController {
   constructor(private readonly jobManagementService: JobManagementService) {}
   @Get()
