@@ -23,7 +23,7 @@ describe('JobController (e2e)', () => {
   beforeEach(async () => {
     jest
       .useFakeTimers({ advanceTimers: true })
-      .setSystemTime(new Date('2025-02-02'));
+      .setSystemTime(new Date('2025-08-08'));
   });
 
   afterEach(async () => {
@@ -31,7 +31,7 @@ describe('JobController (e2e)', () => {
   });
 
   afterAll(async () => {
-    module.close();
+    await module.close();
   });
 
   describe('/job-management (POST)', () => {
