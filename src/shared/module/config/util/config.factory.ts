@@ -1,6 +1,6 @@
-import { configSchema } from '@src/config/util/config.schema';
-import { Config } from '@src/config/util/config.type';
-import { ConfigException } from '@src/config/exception/config.exception';
+import { ConfigException } from '../exception/config.exception';
+import { configSchema } from './config.schema';
+import { Config } from './config.type';
 
 export const factory = (): Config => {
   const result = configSchema.safeParse({

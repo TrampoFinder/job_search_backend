@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  configSchema,
-  environmentSchema,
-} from '@src/config/util/config.schema';
+import { configSchema, environmentSchema } from './config.schema';
 
 export type Environment = z.infer<typeof environmentSchema>;
 

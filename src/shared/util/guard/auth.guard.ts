@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request } from 'express';
-import { UserModel } from '../model/user.model';
+import { UserModel } from '../../../identity/model/user.model';
 import {
   CanActivate,
+  ContextType,
   ExecutionContext,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserManagementService } from '../service/user-management.service';
-import { ConfigService } from '@src/config/service/config.service';
+import { UserManagementService } from '../../../identity/service/user-management.service';
+import { ConfigService } from '@src/shared/module/config/service/config.service';
 export interface AuthenticatedRequest extends Request {
   user: UserModel;
 }
@@ -23,8 +24,7 @@ export class AuthGuard implements CanActivate {
   ) {}
   canActivate = async (context: ExecutionContext): Promise<boolean> => {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-
-    const token = request.headers.authorization?.split(' ')[1];
+    const token = this.extractTokenFromHeader(request);
     if (!token) {
       return false;
     }
@@ -42,4 +42,8 @@ export class AuthGuard implements CanActivate {
     }
     return true;
   };
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.get('Authorization')?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
+  }
 }

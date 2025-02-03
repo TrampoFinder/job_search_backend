@@ -1,29 +1,37 @@
-import JobModel from '@src/job-management/model/job.model';
 import { PrismaService } from '@src/shared/module/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import JobApplicationModel from '../model/job-application.model';
+
+type QueryableFields = Prisma.$UserPayload['scalars'];
 
 @Injectable()
-export class JobRepository {
-  private readonly model: PrismaService['job'];
+export class JobApplicationRepository {
+  private readonly model: PrismaService['jobApplicationProcess'];
   constructor(prismaService: PrismaService) {
-    this.model = prismaService.job;
+    this.model = prismaService.jobApplicationProcess;
   }
-  getAllJobs = async (): Promise<JobModel[]> => {
-    return this.model.findMany();
+  getAllApplicationJobs = async (
+    userId: string,
+  ): Promise<JobApplicationModel[]> => {
+    return this.model.findMany({ where: { userId } });
   };
 
-  save = async (data: JobModel): Promise<JobModel> => {
+  save = async (data: JobApplicationModel): Promise<JobApplicationModel> => {
     return await this.model.create({ data });
   };
 
-  findById = async (id: string): Promise<JobModel | undefined> => {
+  findByOne = async (
+    fields: Partial<QueryableFields>,
+  ): Promise<JobApplicationModel | undefined> => {
     try {
-      const job = await this.model.findFirst({ where: { id } });
-      if (!job) {
+      const jobApplicationProcess = await this.model.findFirst({
+        where: fields,
+      });
+      if (!jobApplicationProcess) {
         return;
       }
-      return job;
+      return jobApplicationProcess;
     } catch (error) {
       this.handleAndThrowError(error);
     }
