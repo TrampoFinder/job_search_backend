@@ -10,17 +10,69 @@ datasource db {
 enum JobStatus {
     ACTIVE
     INACTIVE
+
     @@map("status")
 }
 
 model Job {
-    id         String       @id
+    id          String    @id
     title       String
     description String
-    status JobStatus
-    url String
+    status      JobStatus
+    url         String
+    createdAt   DateTime
+    updatedAt   DateTime
+    deletedAt   DateTime?
+
+    @@map("tb_jobs")
+}
+
+enum RoleUser {
+    ADMIN
+    USER
+
+    @@map("role_user")
+}
+
+model User {
+    id        String    @id
+    firstName String
+    lastName  String
+    username  String
+    email     String    @unique
+    password  String
+    salt      String
+    isActive  Boolean
+    role      RoleUser
     createdAt DateTime
     updatedAt DateTime
     deletedAt DateTime?
-    @@map("tb_jobs")
+
+    @@map("tb_users")
+}
+
+enum JobApplicationProcessStatus {
+    NOT_PROCESSING
+    APPLIED
+    IN_PROGRESS
+    APPROVED
+    REJECTED
+    CLOSED
+
+    @@map("status_job_application_processes")
+}
+
+model JobApplicationProcess {
+    id        String                       @id
+    title     String
+    url       String
+    jobId     String
+    userId    String
+    status    JobApplicationProcessStatus?
+    note      String?
+    createdAt DateTime
+    updatedAt DateTime
+    deletedAt DateTime?
+
+    @@map("tb_job_application_processes")
 }
