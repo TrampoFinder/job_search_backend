@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { CreateUserRequestDto } from '../dto/request/create-user-request.dto';
 import { UserManagementService } from '../service/user-management.service';
-import { AuthGuard } from '../guard/auth.guard';
 import { UserResponseDto } from '../dto/response/user-response.dto';
-import { RestResponseInterceptor } from '@src/job-management/interceptor/rest-response.interceptor';
+import { RestResponseInterceptor } from '@src/shared/util/interceptor/rest-response.interceptor';
+import { AuthGuard } from '@src/shared/util/guard/auth.guard';
 
 @Controller('user')
 export class UserController {

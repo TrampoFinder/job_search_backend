@@ -1,9 +1,10 @@
 import { UserRepository } from '@src/identity/repository/user.repository';
 import { UserManagementService } from '../../user-management.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@src/config/config.module';
-import { PrismaService } from '@src/prisma/prisma.service';
+
+import { PrismaService } from '@src/shared/module/prisma/prisma.service';
 import { UserModel } from '@src/identity/model/user.model';
+import { ConfigModule } from '@src/shared/module/config/config.module';
 
 describe('UserManagement', () => {
   let userManagementService: UserManagementService;

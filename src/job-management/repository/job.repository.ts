@@ -1,5 +1,5 @@
 import JobModel from '@src/job-management/model/job.model';
-import { PrismaService } from '@src/prisma/prisma.service';
+import { PrismaService } from '@src/shared/module/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
@@ -15,6 +15,18 @@ export class JobRepository {
 
   save = async (data: JobModel): Promise<JobModel> => {
     return await this.model.create({ data });
+  };
+
+  findById = async (id: string): Promise<JobModel | undefined> => {
+    try {
+      const job = await this.model.findFirst({ where: { id } });
+      if (!job) {
+        return;
+      }
+      return job;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
   };
 
   clear = async (): Promise<{ count: number }> => {
