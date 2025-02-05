@@ -1,78 +1,92 @@
 generator client {
-    provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-}
-
-enum JobStatus {
-    ACTIVE
-    INACTIVE
-
-    @@map("status")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Job {
-    id          String    @id
-    title       String
-    description String
-    status      JobStatus
-    url         String
-    createdAt   DateTime
-    updatedAt   DateTime
-    deletedAt   DateTime?
+  id          String    @id
+  title       String
+  description String
+  status      JobStatus
+  url         String
+  createdAt   DateTime
+  updatedAt   DateTime
+  deletedAt   DateTime?
 
-    @@map("tb_jobs")
-}
-
-enum RoleUser {
-    ADMIN
-    USER
-
-    @@map("role_user")
+  @@map("tb_jobs")
 }
 
 model User {
-    id        String    @id
-    firstName String
-    lastName  String
-    username  String
-    email     String    @unique
-    password  String
-    salt      String
-    isActive  Boolean
-    role      RoleUser
-    createdAt DateTime
-    updatedAt DateTime
-    deletedAt DateTime?
+  id        String    @id
+  firstName String
+  lastName  String
+  username  String
+  email     String    @unique
+  password  String
+  isActive  Boolean
+  createdAt DateTime
+  updatedAt DateTime
+  salt      String
+  role      RoleUser
+  deletedAt DateTime?
 
-    @@map("tb_users")
-}
-
-enum JobApplicationProcessStatus {
-    NOT_PROCESSING
-    APPLIED
-    IN_PROGRESS
-    APPROVED
-    REJECTED
-    CLOSED
-
-    @@map("status_job_application_processes")
+  @@map("tb_users")
 }
 
 model JobApplicationProcess {
-    id        String                       @id
-    title     String
-    url       String
-    jobId     String
-    userId    String
-    status    JobApplicationProcessStatus?
-    note      String?
-    createdAt DateTime
-    updatedAt DateTime
-    deletedAt DateTime?
+  id        String                       @id
+  title     String
+  url       String
+  jobId     String
+  userId    String
+  note      String?
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime?
+  status    JobApplicationProcessStatus?
 
-    @@map("tb_job_application_processes")
+  @@map("tb_job_application_processes")
+}
+
+view UserJobApplicationAvg {
+  userId        String  @id
+  fullName      String?
+  notProcessing Decimal @db.Decimal
+  applied       Decimal @db.Decimal
+  inProgress    Decimal @db.Decimal
+  approved      Decimal @db.Decimal
+  rejected      Decimal @db.Decimal
+  closed        Decimal @db.Decimal
+
+  @@map("tb_user_job_application_avg")
+}
+
+enum JobStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("status")
+}
+
+enum RoleUser {
+  ADMIN
+  USER
+
+  @@map("role_user")
+}
+
+enum JobApplicationProcessStatus {
+  NOT_PROCESSING
+  APPLIED
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  CLOSED
+
+  @@map("status_job_application_processes")
 }
