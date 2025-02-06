@@ -1,4 +1,4 @@
-export class CandidatesAnalysisReport {
+export class CandidateStatistic {
   userId: string;
   fullName: string;
   notProcessing: number;
@@ -8,13 +8,13 @@ export class CandidatesAnalysisReport {
   rejected: number;
   closed: number;
   // createdAt: Date;
-  constructor(data: CandidatesAnalysisReport) {
+  constructor(data: CandidateStatistic) {
     Object.assign(this, data);
   }
   static create(
-    data: Omit<CandidatesAnalysisReport, 'createdAt'>,
-  ): CandidatesAnalysisReport {
-    return new CandidatesAnalysisReport({
+    data: Omit<CandidateStatistic, 'createdAt'>,
+  ): CandidateStatistic {
+    return new CandidateStatistic({
       ...data,
       // createdAt: new Date(),
     });
