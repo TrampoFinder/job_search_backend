@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request } from 'express';
-import { UserModel } from '../../../identity/model/user.model';
+import { UserModel } from '../model/user.model';
 import {
   CanActivate,
   ContextType,
@@ -9,12 +9,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserManagementService } from '../../../identity/service/user-management.service';
+import { UserManagementService } from '../service/user-management.service';
 import { ConfigService } from '@src/shared/module/config/service/config.service';
-export interface AuthenticatedRequest extends Request {
-  user: UserModel;
-}
-
+import { AuthenticatedRequest } from '@src/shared/module/integration/interface/authenticate-request.interface';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(

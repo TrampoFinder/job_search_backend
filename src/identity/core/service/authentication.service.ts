@@ -9,7 +9,7 @@ import crypto from 'crypto';
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly jwtSerivce: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
   signIn = async (data: SignInRequestDto): Promise<{ accessToken: string }> => {
@@ -18,9 +18,9 @@ export class AuthService {
     if (!user || !this.comparePassword(password, user.password, user.salt)) {
       throw new UserUnauthorizedException('Invalid credentials!');
     }
-    const payload = { sub: user.id };
+    const payload = { sub: user.id, role: user.role };
     return {
-      accessToken: await this.jwtSerivce.signAsync(payload, {
+      accessToken: await this.jwtService.signAsync(payload, {
         algorithm: 'HS256',
       }),
     };

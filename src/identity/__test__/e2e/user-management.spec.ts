@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { IdentityModule } from '@src/identity/identity.module';
-import { UserRepository } from '@src/identity/repository/user.repository';
+import { UserRepository } from '@src/identity/persistence/repository/user.repository';
 import request from 'supertest';
 
 describe('UserManagement (e2e)', () => {
@@ -33,8 +33,8 @@ describe('UserManagement (e2e)', () => {
     await module.close();
   });
 
-  describe('/user/register (POST)', () => {
-    it('creates a user', async () => {
+  describe('/users/register (POST)', () => {
+    it('should create a new user successfully', async () => {
       const userRegister = {
         firstName: 'John',
         lastName: 'Doe',
@@ -43,7 +43,7 @@ describe('UserManagement (e2e)', () => {
         password: 'password123',
       };
       await request(app.getHttpServer())
-        .post('/user/register')
+        .post('/users/register')
         .send(userRegister)
         .expect(201);
       // expect(response.body).toMatchObject(userRegister);
