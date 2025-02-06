@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { IdentityModule } from './identity/identity.module';
-import { JobManagementModule } from './job-management/job-management.module';
-import { ReportManagementModule } from './report-management.module';
+import { JobManagementModule } from '@src/module/job-management/job-management.module';
+import { ReportManagementModule } from '@src/module/report-management/report-management.module';
+import { IdentityModule } from '@src/module/identity/identity.module';
 
 @Module({
   imports: [IdentityModule, JobManagementModule, ReportManagementModule],
