@@ -1,19 +1,19 @@
-import { ExecutionContext, HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobManagementModule } from '@src/job-management/job-management.module';
 import { JobApplicationRepository } from '@src/job-management/repository/job-application.repository';
 import { JobRepository } from '@src/job-management/repository/job.repository';
 import { JobManagementService } from '@src/job-management/service/job-management.service';
-import {
-  AuthenticatedRequest,
-  AuthGuard,
-} from '@src/shared/util/guard/auth.guard';
+
 import request from 'supertest';
+import { IdentityAuthenticateApi } from '@src/shared/module/integration/interface/identity-integration.interface';
+import { JobApplicationManagementService } from '@src/job-management/service/job-application-management.service';
 
 describe('JobApplicationController (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
   let jobManagementService: JobManagementService;
+  let jobApplicationManagementService: JobApplicationManagementService;
   let jobApplicationRepository: JobApplicationRepository;
   let jobRepository: JobRepository;
 
@@ -21,26 +21,12 @@ describe('JobApplicationController (e2e)', () => {
     module = await Test.createTestingModule({
       imports: [JobManagementModule],
     })
-      .overrideGuard(AuthGuard)
+      .overrideProvider(IdentityAuthenticateApi)
       .useValue({
-        canActivate: (context: ExecutionContext) => {
-          const request = context
-            .switchToHttp()
-            .getRequest<AuthenticatedRequest>();
-          request.user = {
-            id: '1',
-            firstName: 'John',
-            lastName: 'Doe',
-            username: 'johndoe',
-            email: 'john.doe@example.com',
-            password: 'hashedpassword',
-            salt: 'salt123',
-            isActive: true,
-            role: 'USER',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            deletedAt: null,
-          };
+        authenticate: () => {
+          return { id: 'mocked-user-id', role: 'USER' };
+        },
+        hasPermission: () => {
           return true;
         },
       })
@@ -48,6 +34,11 @@ describe('JobApplicationController (e2e)', () => {
 
     app = module.createNestApplication();
     await app.init();
+
+    jobApplicationManagementService =
+      module.get<JobApplicationManagementService>(
+        JobApplicationManagementService,
+      );
     jobManagementService =
       module.get<JobManagementService>(JobManagementService);
     jobApplicationRepository = module.get<JobApplicationRepository>(
@@ -72,7 +63,7 @@ describe('JobApplicationController (e2e)', () => {
   });
 
   describe('/job-application (POST)', () => {
-    it('apply a job', async () => {
+    it('should apply a job successfully', async () => {
       const jobInput = {
         title: 'Test Job',
         description: 'Job in R. Rego Freitas',
@@ -95,30 +86,61 @@ describe('JobApplicationController (e2e)', () => {
         jobId: jobOutput.id,
       });
     });
+    it('should not allow invalid jobId', async () => {
+      const jobInput = {
+        title: 'Test Job',
+        description: 'Job in R. Rego Freitas',
+        url: 'https://republicarr.jobs.com.br/',
+      };
+      await jobManagementService.createJob(jobInput);
+      const jobApplicationInput = {
+        title: jobInput.title,
+        url: jobInput.url,
+        userId: 'test',
+        status: 'APPLIED',
+      };
+
+      await request(app.getHttpServer())
+        .post(`/job-application/apply/${'jobOutput'}`)
+        .send(jobApplicationInput)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect({
+          message: 'Job not found',
+          error: 'Not Found',
+          statusCode: 404,
+        });
+    });
   });
-
-  it('does not allow invalid jobId', async () => {
-    const jobInput = {
-      title: 'Test Job',
-      description: 'Job in R. Rego Freitas',
-      url: 'https://republicarr.jobs.com.br/',
-    };
-    await jobManagementService.createJob(jobInput);
-    const jobApplicationInput = {
-      title: jobInput.title,
-      url: jobInput.url,
-      userId: 'test',
-      status: 'APPLIED',
-    };
-
-    await request(app.getHttpServer())
-      .post(`/job-application/apply/${'jobOutput'}`)
-      .send(jobApplicationInput)
-      .expect(HttpStatus.NOT_FOUND)
-      .expect({
-        message: 'Job not found',
-        error: 'Not Found',
-        statusCode: 404,
+  describe('/job-application (GET)', () => {
+    it('should retrieve applied jobs list', async () => {
+      const jobInput = {
+        title: 'Test Job',
+        description: 'Job in R. Rego Freitas',
+        url: 'https://republicarr.jobs.com.br/',
+      };
+      const jobOutput = await jobManagementService.createJob(jobInput);
+      const jobApplicationOutput =
+        await jobApplicationManagementService.applyForJob(
+          jobOutput.id,
+          'mocked-user-id',
+          {
+            title: jobInput.title,
+            url: jobInput.url,
+            status: 'APPLIED',
+            note: null,
+          },
+        );
+      const response = await request(app.getHttpServer())
+        .get('/job-application/mocked-user-id/history')
+        .expect(HttpStatus.OK);
+      expect(response.body[0]).toMatchObject({
+        title: jobApplicationOutput.title,
+        url: jobApplicationOutput.url,
+        jobId: jobOutput.id,
+        userId: 'mocked-user-id',
+        status: jobApplicationOutput.status,
+        note: jobApplicationOutput.note,
       });
+    });
   });
 });

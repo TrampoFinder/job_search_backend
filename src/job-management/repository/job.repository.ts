@@ -1,20 +1,29 @@
 import JobModel from '@src/job-management/model/job.model';
 import { PrismaService } from '@src/shared/module/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import { DefaultPrismaRepository } from '@src/shared/module/prisma/default.prisma.repository';
 
 @Injectable()
-export class JobRepository {
+export class JobRepository extends DefaultPrismaRepository {
   private readonly model: PrismaService['job'];
   constructor(prismaService: PrismaService) {
+    super();
     this.model = prismaService.job;
   }
   getAllJobs = async (): Promise<JobModel[]> => {
-    return this.model.findMany();
+    try {
+      return this.model.findMany();
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
   };
 
   save = async (data: JobModel): Promise<JobModel> => {
-    return await this.model.create({ data });
+    try {
+      return await this.model.create({ data });
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
   };
 
   findById = async (id: string): Promise<JobModel | undefined> => {
@@ -36,19 +45,4 @@ export class JobRepository {
       this.handleAndThrowError(error);
     }
   };
-
-  private extractErrorMessage(error: unknown): string {
-    if (error instanceof Error && error.message) {
-      return error.message;
-    }
-    return 'An unexpected error occurred.';
-  }
-  protected handleAndThrowError(error: unknown): never {
-    const errorMessage = this.extractErrorMessage(error);
-    if (error instanceof Prisma.PrismaClientValidationError) {
-      throw new Error(error.message);
-    }
-
-    throw new Error(errorMessage);
-  }
 }

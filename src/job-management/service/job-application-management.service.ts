@@ -16,7 +16,7 @@ export class JobApplicationManagementService {
     jobId: string,
     userId: string,
     data: CreateJobApplicationRequestDto,
-  ) => {
+  ): Promise<JobApplicationModel> => {
     const job = await this.jobRepository.findById(jobId);
     if (!job) {
       throw new JobNotFoundException('Job not found');
@@ -29,7 +29,9 @@ export class JobApplicationManagementService {
     return await this.jobApplicationRepository.save(newApplicationJob);
   };
 
-  getAllApplicationJobsByUserId = async (userId: string) => {
+  getAllApplicationJobsByUserId = async (
+    userId: string,
+  ): Promise<JobApplicationModel[]> => {
     return await this.jobApplicationRepository.getAllApplicationJobs(userId);
   };
 }

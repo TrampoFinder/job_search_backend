@@ -35,7 +35,7 @@ describe('JobController (e2e)', () => {
   });
 
   describe('/job-management (POST)', () => {
-    it('create a job', async () => {
+    it('should create a job successfully', async () => {
       const input = {
         title: 'Test Job',
         description: 'Job in R. Rego Freitas',
@@ -54,7 +54,7 @@ describe('JobController (e2e)', () => {
           });
         });
     });
-    it('throws an error when the url is invalid', async () => {
+    it('should throw error when the job URL is invalid', async () => {
       const input = {
         title: 'Test Job',
         description: 'Job in R. Rego Freitas',
@@ -75,7 +75,7 @@ describe('JobController (e2e)', () => {
     });
   });
 
-  it('does not allow parameters invalid', async () => {
+  it('should reject invalid parameters', async () => {
     const input = {
       title: 1234,
       description: 95156,
