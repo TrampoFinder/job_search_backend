@@ -1,4 +1,4 @@
-export class CandidatesAnalysisReportNotFoundException extends Error {
+export class CandidatesReportNotFoundException extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
