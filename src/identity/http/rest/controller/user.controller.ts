@@ -13,9 +13,9 @@ import { CreateUserRequestDto } from '../dto/request/create-user-request.dto';
 import { UserManagementService } from '../service/user-management.service';
 import { UserResponseDto } from '../dto/response/user-response.dto';
 import { RestResponseInterceptor } from '@src/shared/util/interceptor/rest-response.interceptor';
-import { AuthGuard } from '@src/shared/util/guard/auth.guard';
+import { AuthGuard } from '@src/identity/guard/auth.guard';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userManagementService: UserManagementService) {}
 

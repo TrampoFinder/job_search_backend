@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
-import { UserRepository } from '../repository/user.repository';
 import { UserModel } from '../model/user.model';
-import { CreateUserRequestDto } from '../dto/request/create-user-request.dto';
 import { UserNotFoundException } from '../exception/user-not-found.exception';
+import { CreateUserRequestDto } from '@src/identity/http/rest/dto/request/create-user-request.dto';
+import { UserRepository } from '@src/identity/persistence/repository/user.repository';
 
 export const PASSWORD_HASH_SALT = crypto.randomBytes(20).toString('hex');
 

@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserManagementService } from '@src/identity/core/service/user-management.service';
 import { IdentityModule } from '@src/identity/identity.module';
-import { UserRepository } from '@src/identity/repository/user.repository';
-import { UserManagementService } from '@src/identity/service/user-management.service';
+import { UserRepository } from '@src/identity/persistence/repository/user.repository';
 import request from 'supertest';
 
 describe('AuthController (e2e)', () => {
@@ -40,7 +40,7 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('/sign-in (POST)', () => {
-    it('sign in a user', async () => {
+    it('should sign in a user with valid credentials', async () => {
       const signInput = {
         firstName: 'John',
         lastName: 'Doe',
@@ -58,7 +58,7 @@ describe('AuthController (e2e)', () => {
         .expect(201);
       expect(acessTokenResponse.body.accessToken).toBeDefined();
       const response = await request(app.getHttpServer())
-        .get(`/user/${user.id}`)
+        .get(`/users/${user.id}`)
         .set('Authorization', `Bearer ${acessTokenResponse.body.accessToken}`);
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({

@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@src/shared/module/prisma/prisma.service';
 import { UserModel } from '../model/user.model';
 import { Prisma } from '@prisma/client';
+import { DefaultPrismaRepository } from '@src/shared/module/prisma/default.prisma.repository';
 
 type QueryableFields = Prisma.$UserPayload['scalars'];
 
 @Injectable()
-export class UserRepository {
+export class UserRepository extends DefaultPrismaRepository {
   private readonly model: PrismaService['user'];
   constructor(prismaService: PrismaService) {
+    super();
     this.model = prismaService.user;
   }
   findByOne = async (
@@ -40,19 +42,4 @@ export class UserRepository {
       this.handleAndThrowError(error);
     }
   };
-
-  private extractErrorMessage(error: unknown): string {
-    if (error instanceof Error && error.message) {
-      return error.message;
-    }
-    return 'An unexpected error occurred.';
-  }
-  protected handleAndThrowError(error: unknown): never {
-    const errorMessage = this.extractErrorMessage(error);
-    if (error instanceof Prisma.PrismaClientValidationError) {
-      throw new Error(error.message);
-    }
-
-    throw new Error(errorMessage);
-  }
 }
