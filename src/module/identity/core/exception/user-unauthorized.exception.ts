@@ -1,6 +1,3 @@
-export class UserUnauthorizedException extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
+import { DefaultDomainException } from '@sharedModule/core/exception/default-domain.exception';
+
+export class UserUnauthorizedException extends DefaultDomainException {}
