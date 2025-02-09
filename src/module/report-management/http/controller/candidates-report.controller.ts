@@ -22,7 +22,7 @@ import { InvalidFileReportGeneratorException } from '@reportManagementModule/cor
 import { CandidatesReportService } from '@reportManagementModule/core/service/candidates-report.service';
 import { CandidatesStatisticDto } from '@reportManagementModule/http/dto/candidates-statistic.dto';
 
-@Controller('/candidates-report')
+@Controller('candidates-report')
 export class CandidatesReportController {
   constructor(
     @Inject(IdentityAuthenticateApi)
@@ -49,13 +49,97 @@ export class CandidatesReportController {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Report Candidates');
       worksheet.columns = [
-        { header: 'Nome Completo', key: 'fullName', width: 20 },
-        { header: 'Não Elegível', key: 'notProcessing', width: 20 },
-        { header: 'Candidatura Enviada', key: 'applied', width: 20 },
-        { header: 'Em Andamento', key: 'inProgress', width: 20 },
-        { header: 'Aprovado', key: 'approved', width: 20 },
-        { header: 'Rejeitado', key: 'rejected', width: 20 },
-        { header: 'Vaga Fechada', key: 'closed', width: 20 },
+        {
+          header: 'NOME COMPLETO',
+          key: 'fullName',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
+        {
+          header: 'NÃO ELEGÍVEL',
+          key: 'notProcessing',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
+        {
+          header: 'CANDIDATURA ENVIADA',
+          key: 'applied',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
+        {
+          header: 'EM ANDAMENTO',
+          key: 'inProgress',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
+        {
+          header: 'APROVADO',
+          key: 'approved',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
+        {
+          header: 'REPROVADO',
+          key: 'rejected',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
+        {
+          header: 'VAGAS FECHADAS',
+          key: 'closed',
+          width: 60,
+          style: {
+            font: {
+              name: 'Arial',
+              size: 12,
+              bold: true,
+            },
+            alignment: { horizontal: 'center' },
+          },
+        },
       ];
       getReport.forEach((report) => {
         const notProcessingPercentage =
@@ -75,6 +159,19 @@ export class CandidatesReportController {
           closed: `${closedPercentage.toFixed(2)}%`,
         });
       });
+      const headerRow = worksheet.getRow(1);
+      headerRow.font = {
+        name: 'Arial',
+        size: 12,
+        bold: true,
+        color: { argb: 'FFFFFFFF' },
+      };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0000FF' },
+      };
+      headerRow.alignment = { horizontal: 'center' };
       const tempDir = os.tmpdir();
       const fileName = `candidates-report.xlsx`;
       const filePath = path.join(tempDir, fileName);
