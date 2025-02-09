@@ -1,6 +1,3 @@
-export class InvalidFileReportGeneratorException extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
+import { DefaultDomainException } from '@sharedModule/core/exception/default-domain.exception';
+
+export class InvalidFileReportGeneratorException extends DefaultDomainException {}

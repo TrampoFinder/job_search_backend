@@ -1,6 +1,2 @@
-export class BadRequestException extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
+import { DefaultDomainException } from '@sharedModule/core/exception/default-domain.exception';
+export class BadRequestException extends DefaultDomainException {}
