@@ -4,6 +4,7 @@ import { JobNotFoundException } from '@jobManagementModule/core/exception/job-no
 import JobApplicationModel from '@jobManagementModule/core/model/job-application.model';
 import { CreateJobApplicationRequestDto } from '@jobManagementModule/http/dto/request/create-job-application-request.dto';
 import { JobApplicationRepository } from '@jobManagementModule/persistence/repository/job-application.repository';
+import { UpdateJobApplicationRequestDto } from '../../http/dto/request/update-job-application-request.dto';
 
 @Injectable()
 export class JobApplicationManagementService {
@@ -26,6 +27,23 @@ export class JobApplicationManagementService {
       jobId: jobId,
     });
     return await this.jobApplicationRepository.save(newApplicationJob);
+  };
+
+  updateJobApplication = async (
+    applicationId: string,
+    data: UpdateJobApplicationRequestDto,
+  ): Promise<JobApplicationModel> => {
+    const application = await this.jobApplicationRepository.findByOne({
+      id: applicationId,
+    });
+    if (!application) {
+      throw new JobNotFoundException('Job application not found');
+    }
+
+    return await this.jobApplicationRepository.update(applicationId, {
+      ...application,
+      ...data,
+    });
   };
 
   getAllApplicationJobsByUserId = async (

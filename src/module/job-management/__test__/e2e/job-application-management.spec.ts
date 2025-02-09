@@ -110,7 +110,7 @@ describe('JobApplicationController (e2e)', () => {
         });
     });
   });
-  describe('/job-application (GET)', () => {
+  describe('JobApplication (GET)', () => {
     it('should retrieve applied jobs list', async () => {
       const jobInput = {
         title: 'Test Job',
@@ -139,6 +139,71 @@ describe('JobApplicationController (e2e)', () => {
         userId: 'mocked-user-id',
         status: jobApplicationOutput.status,
         note: jobApplicationOutput.note,
+      });
+    });
+  });
+  describe('JobApplication (PUT)', () => {
+    it('should update job application status', async () => {
+      const jobInput = {
+        title: 'Test Job',
+        description: 'Job in R. Rego Freitas',
+        url: 'https://republicarr.jobs.com.br/',
+      };
+      const jobOutput = await jobManagementService.createJob(jobInput);
+      const jobApplicationOutput =
+        await jobApplicationManagementService.applyForJob(
+          jobOutput.id,
+          'mocked-user-id',
+          {
+            title: jobInput.title,
+            url: jobInput.url,
+            status: 'APPLIED',
+            note: null,
+          },
+        );
+      const updatedApplicationStatus = {
+        status: 'IN_PROGRESS',
+        note: 'WAIT RESPONSE',
+      };
+      const response = await request(app.getHttpServer())
+        .put(
+          `/job-application/mocked-user-id/${jobApplicationOutput.id}/update`,
+        )
+        .send(updatedApplicationStatus)
+        .expect(HttpStatus.OK);
+      expect(response.body.status).toBe(updatedApplicationStatus.status);
+      expect(response.body.note).toBe(updatedApplicationStatus.note);
+    });
+    it('should update job application with invalid params', async () => {
+      const jobInput = {
+        title: 'Test Job',
+        description: 'Job in R. Rego Freitas',
+        url: 'https://republicarr.jobs.com.br/',
+      };
+      const jobOutput = await jobManagementService.createJob(jobInput);
+
+      await jobApplicationManagementService.applyForJob(
+        jobOutput.id,
+        'mocked-user-id',
+        {
+          title: jobInput.title,
+          url: jobInput.url,
+          status: 'APPLIED',
+          note: null,
+        },
+      );
+      const updatedApplicationStatus = {
+        status: 'IN_PROGRESS',
+        note: 'WAIT RESPONSE',
+      };
+      const response = await request(app.getHttpServer())
+        .put(`/job-application/mocked-user-id/test/update`)
+        .send(updatedApplicationStatus)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(response.body).toMatchObject({
+        message: 'Job application not found',
+        error: 'Not Found',
+        statusCode: 404,
       });
     });
   });
