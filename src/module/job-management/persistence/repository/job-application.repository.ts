@@ -47,6 +47,21 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
     }
   };
 
+  update = async (
+    id: string,
+    data: Partial<JobApplicationModel>,
+  ): Promise<JobApplicationModel> => {
+    try {
+      const updateJobApplicationProcess = await this.model.update({
+        where: { id },
+        data,
+      });
+      return updateJobApplicationProcess;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
+
   clear = async (): Promise<{ count: number }> => {
     try {
       return await this.model.deleteMany();

@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  Put,
   Req,
   Res,
   UsePipes,
@@ -19,6 +20,7 @@ import JobApplicationModel from '@jobManagementModule/core/model/job-application
 import { JobApplicationManagementService } from '@jobManagementModule/core/service/job-application-management.service';
 import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import { AuthenticatedRequest } from '@sharedModule/integration/interface/authenticate-request.interface';
+import { UpdateJobApplicationRequestDto } from '../dto/request/update-job-application-request.dto';
 
 @Controller('job-application')
 export class JobApplicationController {
@@ -74,5 +76,41 @@ export class JobApplicationController {
       );
 
     return jobApplications;
+  }
+  @Put(':userId/:jobId/update')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  async updateJobApplication(
+    @Param('userId') userId: string,
+    @Param('jobId') jobId: string,
+    @Body() data: UpdateJobApplicationRequestDto,
+    @Req() req: AuthenticatedRequest,
+    @Res()
+    res: Response,
+  ): Promise<Response> {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
+      const userAuthenticated =
+        await this.identityAuthenticateApi.authenticate(token);
+      await this.identityAuthenticateApi.hasPermission(
+        userAuthenticated,
+        userId,
+      );
+      const updatedJobApplication =
+        await this.jobApplicationManagementSerivce.updateJobApplication(
+          jobId,
+          data,
+        );
+      return res.status(HttpStatus.OK).send(updatedJobApplication);
+    } catch (error) {
+      if (error instanceof JobNotFoundException) {
+        return res.status(HttpStatus.NOT_FOUND).send({
+          message: error.message,
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Not Found',
+        });
+      }
+      throw error;
+    }
   }
 }
