@@ -5,8 +5,8 @@ import { IsIn, IsOptional, IsString } from 'class-validator';
 export class UpdateJobApplicationRequestDto {
   @IsOptional()
   @IsString({ message: 'Must be a string' })
-  @Transform(({ value }) => value.toUpperCase())
-  @IsIn(Object.values(JobApplicationProcessType))
+  // @Transform(({ value }) => value.toUpperCase())
+  // @IsIn(Object.values(JobApplicationProcessType))
   status: JobApplicationProcessType;
 
   @IsOptional()

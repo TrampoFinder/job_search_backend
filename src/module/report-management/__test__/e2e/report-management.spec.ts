@@ -46,7 +46,6 @@ describe('ReportManagement (e2e)', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'test@example.com',
-        username: 'test',
         password: 'test',
         salt: 'random_salt',
         isActive: true,
@@ -60,8 +59,9 @@ describe('ReportManagement (e2e)', () => {
       data: {
         id: 'test-job',
         title: 'Software Engineer',
-        description: 'Full-stack developer role',
+        company: 'Test Company ',
         status: 'ACTIVE',
+        location: 'São Paulo, BR',
         url: 'https://company.com/job123',
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
