@@ -10,9 +10,10 @@ export type JobStatusType = (typeof JobStatusType)[keyof typeof JobStatusType];
 export default class JobModel {
   id: string;
   title: string;
-  description: string;
+  company: string;
   status: JobStatusType;
   url: string;
+  location: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -31,9 +32,10 @@ export default class JobModel {
     return new JobModel({
       id,
       title: data.title,
-      description: data.description,
+      company: data.company,
       status: 'ACTIVE',
       url: data.url,
+      location: data.location,
       createdAt: new Date(),
       updatedAt: new Date(),
       deletedAt: null,

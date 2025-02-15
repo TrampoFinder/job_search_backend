@@ -2,7 +2,8 @@ import { PrismaService } from '@sharedModule/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { DefaultPrismaRepository } from '@sharedModule/prisma/default.prisma.repository';
 import JobModel from '@jobManagementModule/core/model/job.model';
-
+import { Prisma } from '@prisma/client';
+type QueryableFields = Prisma.$UserPayload['scalars'];
 @Injectable()
 export class JobRepository extends DefaultPrismaRepository {
   private readonly model: PrismaService['job'];
@@ -10,9 +11,20 @@ export class JobRepository extends DefaultPrismaRepository {
     super();
     this.model = prismaService.job;
   }
-  getAllJobs = async (): Promise<JobModel[]> => {
+  findAll = async (
+    fields: Partial<QueryableFields>,
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<{ jobs: JobModel[]; total: number }> => {
     try {
-      return this.model.findMany();
+      const where = fields ? { ...fields } : {};
+      const total = await this.model.count({ where });
+      const jobs = await this.model.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      });
+      return { jobs, total };
     } catch (error) {
       this.handleAndThrowError(error);
     }

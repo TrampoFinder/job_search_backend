@@ -65,8 +65,9 @@ describe('JobApplicationController (e2e)', () => {
     it('should apply a job successfully', async () => {
       const jobInput = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
         url: 'https://republicarr.jobs.com.br/',
+        location: 'São Paulo, BR',
       };
       const jobOutput = await jobManagementService.createJob(jobInput);
       const jobApplicationInput = {
@@ -88,8 +89,9 @@ describe('JobApplicationController (e2e)', () => {
     it('should not allow invalid jobId', async () => {
       const jobInput = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
         url: 'https://republicarr.jobs.com.br/',
+        location: 'São Paulo, BR',
       };
       await jobManagementService.createJob(jobInput);
       const jobApplicationInput = {
@@ -114,8 +116,9 @@ describe('JobApplicationController (e2e)', () => {
     it('should retrieve applied jobs list', async () => {
       const jobInput = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
         url: 'https://republicarr.jobs.com.br/',
+        location: 'São Paulo, BR',
       };
       const jobOutput = await jobManagementService.createJob(jobInput);
       const jobApplicationOutput =
@@ -146,8 +149,9 @@ describe('JobApplicationController (e2e)', () => {
     it('should update job application status', async () => {
       const jobInput = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
         url: 'https://republicarr.jobs.com.br/',
+        location: 'São Paulo, BR',
       };
       const jobOutput = await jobManagementService.createJob(jobInput);
       const jobApplicationOutput =
@@ -177,8 +181,9 @@ describe('JobApplicationController (e2e)', () => {
     it('should update job application with invalid params', async () => {
       const jobInput = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
         url: 'https://republicarr.jobs.com.br/',
+        location: 'São Paulo, BR',
       };
       const jobOutput = await jobManagementService.createJob(jobInput);
 

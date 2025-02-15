@@ -38,7 +38,8 @@ describe('JobController (e2e)', () => {
     it('should create a job successfully', async () => {
       const input = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
+        location: 'São Paulo, BR',
         url: 'https://republicarr.jobs.com.br/',
       };
 
@@ -49,7 +50,8 @@ describe('JobController (e2e)', () => {
         .expect((response) => {
           expect(response.body).toMatchObject({
             title: input.title,
-            description: input.description,
+            company: input.company,
+            location: input.location,
             url: input.url,
           });
         });
@@ -57,7 +59,8 @@ describe('JobController (e2e)', () => {
     it('should throw error when the job URL is invalid', async () => {
       const input = {
         title: 'Test Job',
-        description: 'Job in R. Rego Freitas',
+        company: 'Job in R. Rego Freitas',
+        location: 'São Paulo, BR',
         url: 'republicarr.br',
       };
 
@@ -78,7 +81,8 @@ describe('JobController (e2e)', () => {
   it('should reject invalid parameters', async () => {
     const input = {
       title: 1234,
-      description: 95156,
+      company: 95156,
+      location: 'São Paulo, BR',
       url: 'republicarr.br',
     };
     await request(app.getHttpServer())
