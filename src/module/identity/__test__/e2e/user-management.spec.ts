@@ -3,11 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { IdentityModule } from '@identityModule/identity.module';
 import { UserRepository } from '@identityModule/persistence/repository/user.repository';
 import request from 'supertest';
+import { UserManagementService } from '../../core/service/user-management.service';
 
 describe('UserManagement (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
   let userRepository: UserRepository;
+  let userManagementService: UserManagementService;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -16,6 +18,9 @@ describe('UserManagement (e2e)', () => {
 
     app = module.createNestApplication();
     await app.init();
+    userManagementService = module.get<UserManagementService>(
+      UserManagementService,
+    );
     userRepository = module.get<UserRepository>(UserRepository);
   });
 
@@ -38,7 +43,6 @@ describe('UserManagement (e2e)', () => {
       const userRegister = {
         firstName: 'John',
         lastName: 'Doe',
-        username: 'johndoe',
         email: 'johndoe@example.com',
         password: 'password123',
       };
@@ -46,7 +50,20 @@ describe('UserManagement (e2e)', () => {
         .post('/users/register')
         .send(userRegister)
         .expect(201);
-      // expect(response.body).toMatchObject(userRegister);
+    });
+
+    it('should create a new user with email exists', async () => {
+      const userRegister = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      };
+      await userManagementService.createUser(userRegister);
+      await request(app.getHttpServer())
+        .post('/users/register')
+        .send(userRegister)
+        .expect(409);
     });
   });
 });
