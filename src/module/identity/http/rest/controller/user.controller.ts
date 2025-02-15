@@ -2,18 +2,20 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Post,
+  Res,
   UseGuards,
-  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateUserRequestDto } from '../dto/request/create-user-request.dto';
 import { UserResponseDto } from '../dto/response/user-response.dto';
-import { RestResponseInterceptor } from '@src/module/shared/util/interceptor/rest-response.interceptor';
 import { UserManagementService } from '@identityModule/core/service/user-management.service';
 import { AuthGuard } from '@identityModule/http/rest/guard/auth.guard';
+import { EmailAlreadyExists } from '@src/module/identity/core/exception/email-already-exists.exception';
+import { Response } from 'express';
 
 @Controller('users')
 export class UserController {
@@ -21,36 +23,48 @@ export class UserController {
 
   @Post('register')
   @UsePipes(new ValidationPipe({ transform: true }))
-  @UseInterceptors(new RestResponseInterceptor(UserResponseDto))
   async createUser(
     @Body() data: CreateUserRequestDto,
-  ): Promise<UserResponseDto> {
-    const user = await this.userManagementService.createUser(data);
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      username: user.username,
-      email: user.email,
-      isActive: user.isActive,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      deletedAt: user.deletedAt,
-    };
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const user = await this.userManagementService.createUser(data);
+      return res.status(HttpStatus.CREATED).send({
+        message: 'User created successfully',
+        statusCode: HttpStatus.CREATED,
+        data: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          isActive: user.isActive,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          deletedAt: user.deletedAt,
+        },
+      });
+    } catch (error) {
+      if (error instanceof EmailAlreadyExists) {
+        return res.status(HttpStatus.CONFLICT).send({
+          message: error.message,
+          statusCode: HttpStatus.CONFLICT,
+          error: 'Conflict',
+        });
+      }
+      throw error;
+    }
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
-  @UseInterceptors(new RestResponseInterceptor(UserResponseDto))
   async getUserById(@Param('id') userId: string): Promise<UserResponseDto> {
     const user = await this.userManagementService.getUserById(userId);
     return {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
-      username: user.username,
       email: user.email,
       isActive: user.isActive,
       role: user.role,

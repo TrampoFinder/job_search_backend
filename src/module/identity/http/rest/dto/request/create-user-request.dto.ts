@@ -10,10 +10,6 @@ export class CreateUserRequestDto {
   lastName: string;
 
   @IsString({ message: 'Must be a string' })
-  @IsNotEmpty()
-  username: string;
-
-  @IsString({ message: 'Must be a string' })
   @IsEmail()
   @IsNotEmpty()
   email: string;

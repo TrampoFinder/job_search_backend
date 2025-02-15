@@ -22,10 +22,6 @@ export class UserResponseDto {
   lastName: string;
 
   @IsString({ message: 'Must be a string' })
-  @Expose()
-  username: string;
-
-  @IsString({ message: 'Must be a string' })
   @IsEmail()
   @Expose()
   email: string;

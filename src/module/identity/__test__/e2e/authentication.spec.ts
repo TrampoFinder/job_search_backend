@@ -44,7 +44,6 @@ describe('AuthController (e2e)', () => {
       const signInput = {
         firstName: 'John',
         lastName: 'Doe',
-        username: 'johndoe',
         email: 'johndoe@example.com',
         password: 'password123',
       };
@@ -55,7 +54,7 @@ describe('AuthController (e2e)', () => {
           email: signInput.email,
           password: signInput.password,
         })
-        .expect(201);
+        .expect(200);
       expect(acessTokenResponse.body.accessToken).toBeDefined();
       const response = await request(app.getHttpServer())
         .get(`/users/${user.id}`)
@@ -65,7 +64,6 @@ describe('AuthController (e2e)', () => {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        username: user.username,
         email: user.email,
         isActive: user.isActive,
         role: user.role,

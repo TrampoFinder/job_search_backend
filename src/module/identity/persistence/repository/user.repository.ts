@@ -4,7 +4,6 @@ import { PrismaService } from '@sharedModule/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { DefaultPrismaRepository } from '@sharedModule/prisma/default.prisma.repository';
 import { UserModel } from '@identityModule/core/model/user.model';
-
 type QueryableFields = Prisma.$UserPayload['scalars'];
 
 @Injectable()
@@ -31,6 +30,18 @@ export class UserRepository extends DefaultPrismaRepository {
   save = async (data: UserModel): Promise<UserModel> => {
     try {
       const user = await this.model.create({ data });
+      return user;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
+
+  findByEmail = async (email: string): Promise<UserModel | undefined> => {
+    try {
+      const user = await this.model.findFirst({ where: { email } });
+      if (!user) {
+        return;
+      }
       return user;
     } catch (error) {
       this.handleAndThrowError(error);
