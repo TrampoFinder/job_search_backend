@@ -1,12 +1,12 @@
 export class CandidateStatistic {
   userId: string;
   fullName: string;
-  notProcessing: number;
-  applied: number;
-  inProgress: number;
-  approved: number;
-  rejected: number;
-  closed: number;
+  notProcessing: string;
+  applied: string;
+  inProgress: string;
+  approved: string;
+  rejected: string;
+  closed: string;
   // createdAt: Date;
   constructor(data: CandidateStatistic) {
     Object.assign(this, data);

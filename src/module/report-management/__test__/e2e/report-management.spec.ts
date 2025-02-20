@@ -21,9 +21,9 @@ describe('ReportManagement (e2e)', () => {
       .overrideProvider(IdentityAuthenticateApi)
       .useValue({
         authenticate: () => {
-          return { id: 'test-user', role: 'USER' };
+          return { id: 'test-user', role: 'ADMIN' };
         },
-        hasPermission: () => {
+        hasAdminPermission: () => {
           return true;
         },
       })
@@ -49,7 +49,7 @@ describe('ReportManagement (e2e)', () => {
         password: 'test',
         salt: 'random_salt',
         isActive: true,
-        role: 'USER',
+        role: 'ADMIN',
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
@@ -68,15 +68,40 @@ describe('ReportManagement (e2e)', () => {
         deletedAt: null,
       },
     });
-
     await prisma.jobApplicationProcess.create({
       data: {
-        id: 'test-process',
+        id: 'test-process1',
         title: 'Software Engineer - Full-stack developer role',
         url: 'https://company.com/job123',
         userId: 'test-user',
         jobId: 'test-job',
         status: 'APPLIED',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        deletedAt: null,
+      },
+    });
+    await prisma.jobApplicationProcess.create({
+      data: {
+        id: 'test-process2',
+        title: 'Software Engineer',
+        url: 'https://company.com/job123',
+        userId: 'test-user',
+        jobId: 'test-job',
+        status: 'IN_PROGRESS',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        deletedAt: null,
+      },
+    });
+    await prisma.jobApplicationProcess.create({
+      data: {
+        id: 'test-process3',
+        title: 'Software Engineer',
+        url: 'https://company.com/job123',
+        userId: 'test-user',
+        jobId: 'test-job',
+        status: 'REJECTED',
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         deletedAt: null,
@@ -88,25 +113,26 @@ describe('ReportManagement (e2e)', () => {
     await candidatesReportRepository.clear();
   });
   afterAll(async () => {
+    await candidatesReportRepository.clear();
     await prisma.$disconnect();
     await module.close();
   });
   describe('ReportController (GET)', () => {
-    it('returns a list of candidates with average applications', async () => {
+    it('returns a list of candidates with average applications view', async () => {
       const response = await request(app.getHttpServer()).get(
-        '/candidates-report',
+        '/candidates-report/view',
       );
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body[0]).toMatchObject({
         userId: 'test-user',
         fullName: 'Test User',
-        notProcessing: 0,
-        applied: 1,
-        inProgress: 0,
-        approved: 0,
-        rejected: 0,
-        closed: 0,
+        notProcessing: '0.00',
+        applied: '33.33',
+        inProgress: '33.33',
+        approved: '0.00',
+        rejected: '33.33',
+        closed: '0.00',
       });
     });
     it('returns a file of candidates with average applications', async () => {
@@ -126,6 +152,26 @@ describe('ReportManagement (e2e)', () => {
       const filePath = path.join(tempDir, fileName);
       expect(fs.existsSync(filePath)).toBeTruthy();
       unlinkSpy.mockRestore();
+    });
+    it('returns a list of candidates with average applications', async () => {
+      const response = await request(app.getHttpServer()).get(
+        '/candidates-report',
+      );
+      expect(response.status).toBe(200);
+      expect(response.body[0]).toMatchObject({
+        userId: 'test-user',
+        fullName: 'Test User',
+        totalApplications: 3,
+        activeProcessCount: 2,
+        statusCount: {
+          IN_PROGRESS: 1,
+          APPROVED: 0,
+          APPLIED: 1,
+          REJECTED: 1,
+          CLOSED: 0,
+          NOT_PROCESSING: 0,
+        },
+      });
     });
   });
 });

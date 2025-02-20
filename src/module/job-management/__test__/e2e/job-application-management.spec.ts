@@ -7,6 +7,7 @@ import request from 'supertest';
 import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import { JobApplicationManagementService } from '@jobManagementModule/core/service/job-application-management.service';
 import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
+import { PrismaService } from '@src/module/shared/module/prisma/prisma.service';
 
 describe('JobApplicationController (e2e)', () => {
   let module: TestingModule;
@@ -15,6 +16,7 @@ describe('JobApplicationController (e2e)', () => {
   let jobApplicationManagementService: JobApplicationManagementService;
   let jobApplicationRepository: JobApplicationRepository;
   let jobRepository: JobRepository;
+  let prismaService: PrismaService;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -23,7 +25,7 @@ describe('JobApplicationController (e2e)', () => {
       .overrideProvider(IdentityAuthenticateApi)
       .useValue({
         authenticate: () => {
-          return { id: 'mocked-user-id', role: 'USER' };
+          return { id: '647edd99-34b9-436e-9398-bde6c93cec4d', role: 'USER' };
         },
         hasPermission: () => {
           return true;
@@ -44,6 +46,22 @@ describe('JobApplicationController (e2e)', () => {
       JobApplicationRepository,
     );
     jobRepository = module.get<JobRepository>(JobRepository);
+    prismaService = module.get<PrismaService>(PrismaService);
+    await prismaService.user.create({
+      data: {
+        id: '647edd99-34b9-436e-9398-bde6c93cec4d',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'testsss@example.com',
+        password: 'test',
+        salt: 'random_salt',
+        isActive: true,
+        role: 'USER',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      },
+    });
   });
 
   beforeEach(async () => {
@@ -58,6 +76,7 @@ describe('JobApplicationController (e2e)', () => {
   });
 
   afterAll(async () => {
+    await prismaService.user.deleteMany();
     await module.close();
   });
 
@@ -124,7 +143,7 @@ describe('JobApplicationController (e2e)', () => {
       const jobApplicationOutput =
         await jobApplicationManagementService.applyForJob(
           jobOutput.id,
-          'mocked-user-id',
+          '647edd99-34b9-436e-9398-bde6c93cec4d',
           {
             title: jobInput.title,
             url: jobInput.url,
@@ -133,13 +152,13 @@ describe('JobApplicationController (e2e)', () => {
           },
         );
       const response = await request(app.getHttpServer())
-        .get('/job-application/mocked-user-id/history')
+        .get('/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/history')
         .expect(HttpStatus.OK);
       expect(response.body[0]).toMatchObject({
         title: jobApplicationOutput.title,
         url: jobApplicationOutput.url,
         jobId: jobOutput.id,
-        userId: 'mocked-user-id',
+        userId: '647edd99-34b9-436e-9398-bde6c93cec4d',
         status: jobApplicationOutput.status,
         note: jobApplicationOutput.note,
       });
@@ -157,7 +176,7 @@ describe('JobApplicationController (e2e)', () => {
       const jobApplicationOutput =
         await jobApplicationManagementService.applyForJob(
           jobOutput.id,
-          'mocked-user-id',
+          '647edd99-34b9-436e-9398-bde6c93cec4d',
           {
             title: jobInput.title,
             url: jobInput.url,
@@ -171,7 +190,7 @@ describe('JobApplicationController (e2e)', () => {
       };
       const response = await request(app.getHttpServer())
         .put(
-          `/job-application/mocked-user-id/${jobApplicationOutput.id}/update`,
+          `/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/${jobApplicationOutput.id}/update`,
         )
         .send(updatedApplicationStatus)
         .expect(HttpStatus.OK);
@@ -189,7 +208,7 @@ describe('JobApplicationController (e2e)', () => {
 
       await jobApplicationManagementService.applyForJob(
         jobOutput.id,
-        'mocked-user-id',
+        '647edd99-34b9-436e-9398-bde6c93cec4d',
         {
           title: jobInput.title,
           url: jobInput.url,
@@ -202,7 +221,9 @@ describe('JobApplicationController (e2e)', () => {
         note: 'WAIT RESPONSE',
       };
       const response = await request(app.getHttpServer())
-        .put(`/job-application/mocked-user-id/test/update`)
+        .put(
+          `/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/test/update`,
+        )
         .send(updatedApplicationStatus)
         .expect(HttpStatus.NOT_FOUND);
       expect(response.body).toMatchObject({

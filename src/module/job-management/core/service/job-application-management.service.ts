@@ -49,6 +49,33 @@ export class JobApplicationManagementService {
   getAllApplicationJobsByUserId = async (
     userId: string,
   ): Promise<JobApplicationModel[]> => {
-    return await this.jobApplicationRepository.getAllApplicationJobs(userId);
+    return await this.jobApplicationRepository.getAllApplicationJobsByUserId(
+      userId,
+    );
+  };
+
+  getJobApplications = async (
+    page?: number,
+    pageSize?: number,
+  ): Promise<
+    {
+      userId: string;
+      fullName: string;
+      totalApplications: number;
+      activeProcessCount: number;
+      statusCount: {
+        IN_PROGRESS: number;
+        APPROVED: number;
+        APPLIED: number;
+        REJECTED: number;
+        CLOSED: number;
+        NOT_PROCESSING: number;
+      };
+    }[]
+  > => {
+    return await this.jobApplicationRepository.getJobApplications(
+      page,
+      pageSize,
+    );
   };
 }

@@ -6,6 +6,10 @@ export interface IdentityAuthenticateApi {
     userAuthenticated: { id: string; role: string },
     token: string | undefined,
   ): Promise<boolean>;
+  hasAdminPermission(
+    userAuthenticated: { id: string; role: string },
+    token: string | undefined,
+  ): Promise<boolean>;
 }
 
 export const IdentityAuthenticateApi = Symbol('IdentityAuthenticateApi');

@@ -9,31 +9,33 @@ datasource db {
 }
 
 model Job {
-  id          String    @id
-  title       String
-  company String
-  status      JobStatus
-  url         String
-  location    String
-  createdAt   DateTime
-  updatedAt   DateTime
-  deletedAt   DateTime?
+  id                    String                  @id
+  title                 String
+  company               String
+  status                JobStatus
+  url                   String
+  location              String
+  createdAt             DateTime
+  updatedAt             DateTime
+  deletedAt             DateTime?
+  JobApplicationProcess JobApplicationProcess[]
 
   @@map("tb_jobs")
 }
 
 model User {
-  id        String    @id
-  firstName String
-  lastName  String
-  email     String    @unique
-  password  String
-  isActive  Boolean
-  createdAt DateTime
-  updatedAt DateTime
-  salt      String
-  role      RoleUser
-  deletedAt DateTime?
+  id                    String                  @id
+  firstName             String
+  lastName              String
+  email                 String                  @unique
+  password              String
+  isActive              Boolean
+  createdAt             DateTime
+  updatedAt             DateTime
+  salt                  String
+  role                  RoleUser
+  deletedAt             DateTime?
+  JobApplicationProcess JobApplicationProcess[]
 
   @@map("tb_users")
 }
@@ -49,6 +51,8 @@ model JobApplicationProcess {
   updatedAt DateTime
   deletedAt DateTime?
   status    JobApplicationProcessStatus?
+  user      User?                        @relation(fields: [userId], references: [id], onDelete: NoAction)
+  job       Job?                         @relation(fields: [jobId], references: [id], onDelete: NoAction)
 
   @@map("tb_job_application_processes")
 }
