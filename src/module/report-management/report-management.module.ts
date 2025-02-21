@@ -7,9 +7,17 @@ import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/ide
 import { IdentityPublicApiProvider } from '@identityModule/integration/provider/public-api.provider';
 import { CandidatesReportService } from './core/service/candidates-report.service';
 import { CandidatesReportRepository } from './persistence/repository/candidates-report.repository';
+import { JobManagementModule } from '../job-management/job-management.module';
+import { JobApplicationPublicApiProvider } from '../job-management/integration/provider/public-api.provider';
+import { JobApplicationApi } from '../shared/module/integration/interface/job-application-integration.interface';
 
 @Module({
-  imports: [ConfigModule.forRoot(), PrismaModule, IdentityModule],
+  imports: [
+    ConfigModule.forRoot(),
+    PrismaModule,
+    IdentityModule,
+    JobManagementModule,
+  ],
   controllers: [CandidatesReportController],
   providers: [
     CandidatesReportService,
@@ -17,6 +25,10 @@ import { CandidatesReportRepository } from './persistence/repository/candidates-
     {
       provide: IdentityAuthenticateApi,
       useExisting: IdentityPublicApiProvider,
+    },
+    {
+      provide: JobApplicationApi,
+      useExisting: JobApplicationPublicApiProvider,
     },
   ],
 })

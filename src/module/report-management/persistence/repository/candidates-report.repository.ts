@@ -21,12 +21,12 @@ export class CandidatesReportRepository extends DefaultPrismaRepository {
       return average.map((item) => ({
         userId: item.userId,
         fullName: item.fullName!,
-        notProcessing: item.notProcessing.toNumber(),
-        applied: item.applied.toNumber(),
-        inProgress: item.inProgress.toNumber(),
-        approved: item.approved.toNumber(),
-        rejected: item.rejected.toNumber(),
-        closed: item.closed.toNumber(),
+        notProcessing: (item.notProcessing.toNumber() * 100).toFixed(2),
+        applied: (item.applied.toNumber() * 100).toFixed(2),
+        inProgress: (item.inProgress.toNumber() * 100).toFixed(2),
+        approved: (item.approved.toNumber() * 100).toFixed(2),
+        rejected: (item.rejected.toNumber() * 100).toFixed(2),
+        closed: (item.closed.toNumber() * 100).toFixed(2),
       }));
     } catch (error) {
       this.handleAndThrowError(error);
@@ -34,10 +34,10 @@ export class CandidatesReportRepository extends DefaultPrismaRepository {
   };
   clear = async (): Promise<{ count: number }> => {
     try {
-      await this.prismaService.$queryRaw`TRUNCATE TABLE tb_users;`;
-      await this.prismaService.$queryRaw`TRUNCATE TABLE tb_jobs;`;
+      await this.prismaService.$queryRaw`TRUNCATE TABLE tb_users CASCADE;`;
+      await this.prismaService.$queryRaw`TRUNCATE TABLE tb_jobs CASCADE;`;
       await this.prismaService
-        .$queryRaw`TRUNCATE TABLE tb_job_application_processes;`;
+        .$queryRaw`TRUNCATE TABLE tb_job_application_processes CASCADE;`;
       return { count: 0 };
     } catch (error) {
       this.handleAndThrowError(error);

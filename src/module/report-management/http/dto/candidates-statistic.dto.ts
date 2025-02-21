@@ -10,20 +10,20 @@ export class CandidatesStatisticDto {
   fullName: string;
   @IsNumber()
   @Expose()
-  notProcessing: number;
+  notProcessing: string;
   @IsNumber()
   @Expose()
-  applied: number;
+  applied: string;
   @IsNumber()
   @Expose()
-  inProgress: number;
+  inProgress: string;
   @IsNumber()
   @Expose()
-  approved: number;
+  approved: string;
   @IsNumber()
   @Expose()
-  rejected: number;
+  rejected: string;
   @IsNumber()
   @Expose()
-  closed: number;
+  closed: string;
 }

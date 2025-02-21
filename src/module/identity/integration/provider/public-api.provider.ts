@@ -41,4 +41,13 @@ export class IdentityPublicApiProvider implements IdentityAuthenticateApi {
     }
     return true;
   }
+  async hasAdminPermission(
+    userAuthenticated: { id: string; role: string },
+    userId: string,
+  ): Promise<boolean> {
+    if (userAuthenticated.role !== 'ADMIN' && userAuthenticated.id !== userId) {
+      throw new UnauthorizedException('You do not have permission.');
+    }
+    return true;
+  }
 }

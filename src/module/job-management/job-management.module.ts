@@ -10,6 +10,7 @@ import { JobApplicationController } from '@jobManagementModule/http/controller/j
 import { JobController } from '@jobManagementModule/http/controller/job.controller';
 import { IdentityPublicApiProvider } from '../identity/integration/provider/public-api.provider';
 import { IdentityModule } from '../identity/identity.module';
+import { JobApplicationPublicApiProvider } from './integration/provider/public-api.provider';
 @Module({
   imports: [ConfigModule.forRoot(), PrismaModule, IdentityModule],
   controllers: [JobController, JobApplicationController],
@@ -18,10 +19,12 @@ import { IdentityModule } from '../identity/identity.module';
     JobApplicationManagementService,
     JobRepository,
     JobApplicationRepository,
+    JobApplicationPublicApiProvider,
     {
       provide: IdentityAuthenticateApi,
       useExisting: IdentityPublicApiProvider,
     },
   ],
+  exports: [JobApplicationPublicApiProvider],
 })
 export class JobManagementModule {}

@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  Query,
   Req,
   Res,
   UseInterceptors,
@@ -21,6 +22,8 @@ import { CandidatesReportNotFoundException } from '@reportManagementModule/core/
 import { InvalidFileReportGeneratorException } from '@reportManagementModule/core/exception/invalid-file-report-generator .exceptions';
 import { CandidatesReportService } from '@reportManagementModule/core/service/candidates-report.service';
 import { CandidatesStatisticDto } from '@reportManagementModule/http/dto/candidates-statistic.dto';
+import { JobApplicationApi } from '@src/module/shared/module/integration/interface/job-application-integration.interface';
+import { CandidatesReportDto } from '../dto/candidates-report.dto';
 
 @Controller('candidates-report')
 export class CandidatesReportController {
@@ -28,24 +31,30 @@ export class CandidatesReportController {
     @Inject(IdentityAuthenticateApi)
     private readonly identityAuthenticateApi: IdentityAuthenticateApi,
     private readonly candidatesReportService: CandidatesReportService,
+    @Inject(JobApplicationApi)
+    private readonly jobApplicationApi: JobApplicationApi,
   ) {}
-  @Get()
+  @Get('view')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(new RestResponseInterceptor(CandidatesStatisticDto))
-  async getCandidatesReport(
+  async getCandidatesViewReport(
     @Req() req: AuthenticatedRequest,
   ): Promise<CandidatesStatisticDto[]> {
     const token = req.headers.authorization?.split(' ')[1];
-    await this.identityAuthenticateApi.authenticate(token);
+    const autheticatedUser =
+      await this.identityAuthenticateApi.authenticate(token);
+    await this.identityAuthenticateApi.hasAdminPermission(
+      autheticatedUser,
+      token,
+    );
     return await this.candidatesReportService.getReport();
   }
 
-  @Get('/download')
+  @Get('download')
   @HttpCode(HttpStatus.OK)
   async exportCandidatesReport(@Res() res: Response): Promise<void | Response> {
     try {
       const getReport = await this.candidatesReportService.getReport();
-      const totalCount = getReport.length;
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Report Candidates');
       worksheet.columns = [
@@ -142,21 +151,14 @@ export class CandidatesReportController {
         },
       ];
       getReport.forEach((report) => {
-        const notProcessingPercentage =
-          (report.notProcessing / totalCount) * 100;
-        const appliedPercentage = (report.applied / totalCount) * 100;
-        const inProgressPercentage = (report.inProgress / totalCount) * 100;
-        const approvedPercentage = (report.approved / totalCount) * 100;
-        const rejectedPercentage = (report.rejected / totalCount) * 100;
-        const closedPercentage = (report.closed / totalCount) * 100;
         worksheet.addRow({
           fullName: report.fullName,
-          notProcessing: `${notProcessingPercentage.toFixed(2)}%`,
-          applied: `${appliedPercentage.toFixed(2)}%`,
-          inProgress: `${inProgressPercentage.toFixed(2)}%`,
-          approved: `${approvedPercentage.toFixed(2)}%`,
-          rejected: `${rejectedPercentage.toFixed(2)}%`,
-          closed: `${closedPercentage.toFixed(2)}%`,
+          notProcessing: report.notProcessing,
+          applied: report.applied,
+          inProgress: report.inProgress,
+          approved: report.approved,
+          rejected: report.rejected,
+          closed: report.closed,
         });
       });
       const headerRow = worksheet.getRow(1);
@@ -204,5 +206,27 @@ export class CandidatesReportController {
       }
       throw error;
     }
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(new RestResponseInterceptor(CandidatesReportDto))
+  async getJobApplicationsReport(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ): Promise<CandidatesReportDto[]> {
+    const token = req.headers.authorization?.split(' ')[1];
+    const autheticatedUser =
+      await this.identityAuthenticateApi.authenticate(token);
+    await this.identityAuthenticateApi.hasAdminPermission(
+      autheticatedUser,
+      token,
+    );
+    const jobApplications = await this.jobApplicationApi.getJobApplications(
+      page,
+      pageSize,
+    );
+    return jobApplications;
   }
 }
