@@ -42,4 +42,12 @@ export class JobController {
   ): Promise<JobModel> {
     return await this.jobManagementService.createJob(createJobRequestDto);
   }
+
+  @Get('companies')
+  async getJobsByCompanyCount(): Promise<{ companyCount: number }> {
+    const jobsCompany = await this.jobManagementService.getJobsByCompanyCount();
+    return {
+      companyCount: jobsCompany,
+    };
+  }
 }
