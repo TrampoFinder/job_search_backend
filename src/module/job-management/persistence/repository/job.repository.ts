@@ -50,6 +50,22 @@ export class JobRepository extends DefaultPrismaRepository {
     }
   };
 
+  findByCompanyCount = async (): Promise<number> => {
+    try {
+      const companyJobs = await this.model.findMany({
+        distinct: ['company'],
+        select: { company: true },
+      });
+
+      if (!companyJobs) {
+        return 0;
+      }
+      return companyJobs.length;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
+
   clear = async (): Promise<{ count: number }> => {
     try {
       return await this.model.deleteMany();

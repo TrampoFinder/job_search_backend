@@ -26,4 +26,8 @@ export class JobManagementService {
     const newJob = JobModel.create(data);
     return await this.jobRepository.save(newJob);
   };
+
+  getJobsByCompanyCount = async (): Promise<number> => {
+    return await this.jobRepository.findByCompanyCount();
+  };
 }

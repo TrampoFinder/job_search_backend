@@ -3,11 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JobManagementModule } from '@jobManagementModule/job-management.module';
 import { JobRepository } from '@jobManagementModule/persistence/repository/job.repository';
 import request from 'supertest';
+import { JobManagementService } from '../../core/service/job-management.service';
 
 describe('JobController (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
   let jobRepository: JobRepository;
+  let jobManagementService: JobManagementService;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -18,6 +20,8 @@ describe('JobController (e2e)', () => {
     await app.init();
 
     jobRepository = module.get<JobRepository>(JobRepository);
+    jobManagementService =
+      module.get<JobManagementService>(JobManagementService);
   });
 
   beforeEach(async () => {
@@ -77,7 +81,6 @@ describe('JobController (e2e)', () => {
         });
     });
   });
-
   it('should reject invalid parameters', async () => {
     const input = {
       title: 1234,
@@ -97,6 +100,24 @@ describe('JobController (e2e)', () => {
         ],
         error: 'Bad Request',
         statusCode: 400,
+      });
+  });
+
+  it('retrieve job by company', async () => {
+    const jobInput = {
+      title: 'Test Job',
+      company: 'Job in R. Rego Freitas',
+      url: 'https://republicarr.jobs.com.br/',
+      location: 'São Paulo, BR',
+    };
+    await jobManagementService.createJob(jobInput);
+    await request(app.getHttpServer())
+      .get(`/job-management/companies/`)
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          companyCount: 1,
+        });
       });
   });
 });
