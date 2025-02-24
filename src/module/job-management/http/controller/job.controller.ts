@@ -6,14 +6,22 @@ import {
   ValidationPipe,
   UsePipes,
   Query,
+  Req,
+  Inject,
 } from '@nestjs/common';
 import JobModel from '@jobManagementModule/core/model/job.model';
 import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
 import { CreateJobRequestDto } from '@jobManagementModule/http/dto/request/create-job-request.dto';
+import { AuthenticatedRequest } from '@src/module/shared/module/integration/interface/authenticate-request.interface';
+import { IdentityAuthenticateApi } from '@src/module/shared/module/integration/interface/identity-integration.interface';
 
 @Controller('job-management')
 export class JobController {
-  constructor(private readonly jobManagementService: JobManagementService) {}
+  constructor(
+    private readonly jobManagementService: JobManagementService,
+    @Inject(IdentityAuthenticateApi)
+    private readonly identityAuthenticateApi: IdentityAuthenticateApi,
+  ) {}
   @Get()
   async listAll(
     @Query('page') page: string,
@@ -39,7 +47,15 @@ export class JobController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createJobRequestDto: CreateJobRequestDto,
+    @Req() req: AuthenticatedRequest,
   ): Promise<JobModel> {
+    const token = req.headers.authorization?.split(' ')[1];
+    const authenticatedUser =
+      await this.identityAuthenticateApi.authenticate(token);
+    await this.identityAuthenticateApi.hasAdminPermission(
+      authenticatedUser,
+      token,
+    );
     return await this.jobManagementService.createJob(createJobRequestDto);
   }
 

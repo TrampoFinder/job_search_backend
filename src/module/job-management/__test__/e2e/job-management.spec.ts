@@ -4,6 +4,7 @@ import { JobManagementModule } from '@jobManagementModule/job-management.module'
 import { JobRepository } from '@jobManagementModule/persistence/repository/job.repository';
 import request from 'supertest';
 import { JobManagementService } from '../../core/service/job-management.service';
+import { IdentityAuthenticateApi } from '@src/module/shared/module/integration/interface/identity-integration.interface';
 
 describe('JobController (e2e)', () => {
   let module: TestingModule;
@@ -14,7 +15,17 @@ describe('JobController (e2e)', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [JobManagementModule],
-    }).compile();
+    })
+      .overrideProvider(IdentityAuthenticateApi)
+      .useValue({
+        authenticate: () => {
+          return { id: '647edd99-34b9-436e-9398-bde6c93cec4d', role: 'ADMIN' };
+        },
+        hasAdminPermission: () => {
+          return true;
+        },
+      })
+      .compile();
 
     app = module.createNestApplication();
     await app.init();
