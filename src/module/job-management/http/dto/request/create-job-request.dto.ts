@@ -1,6 +1,4 @@
-import { Transform, TransformFnParams } from 'class-transformer';
 import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
-import sanitizeHtml from 'sanitize-html';
 
 export class CreateJobRequestDto {
   @IsNotEmpty()
