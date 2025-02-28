@@ -22,7 +22,7 @@ import { CandidatesReportNotFoundException } from '@reportManagementModule/core/
 import { InvalidFileReportGeneratorException } from '@reportManagementModule/core/exception/invalid-file-report-generator .exceptions';
 import { CandidatesReportService } from '@reportManagementModule/core/service/candidates-report.service';
 import { CandidatesStatisticDto } from '@reportManagementModule/http/dto/candidates-statistic.dto';
-import { JobApplicationApi } from '@src/module/shared/module/integration/interface/job-application-integration.interface';
+import { JobApplicationApi } from '@sharedModule/integration/interface/job-application-integration.interface';
 import { CandidatesReportDto } from '../dto/candidates-report.dto';
 
 @Controller('candidates-report')

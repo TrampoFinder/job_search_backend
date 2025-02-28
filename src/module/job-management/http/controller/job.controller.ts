@@ -17,11 +17,11 @@ import {
 import JobModel from '@jobManagementModule/core/model/job.model';
 import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
 import { CreateJobRequestDto } from '@jobManagementModule/http/dto/request/create-job-request.dto';
-import { AuthenticatedRequest } from '@src/module/shared/module/integration/interface/authenticate-request.interface';
-import { IdentityAuthenticateApi } from '@src/module/shared/module/integration/interface/identity-integration.interface';
+import { AuthenticatedRequest } from '@sharedModule/integration/interface/authenticate-request.interface';
+import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { RestResponseInterceptor } from '@src/module/shared/util/interceptor/rest-response.interceptor';
+import { RestResponseInterceptor } from '@sharedLibs/util/interceptor/rest-response.interceptor';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import * as ExcelJS from 'exceljs';
@@ -59,15 +59,15 @@ export class JobController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createJobRequestDto: CreateJobRequestDto,
-    @Req() req: AuthenticatedRequest,
+    // @Req() req: AuthenticatedRequest,
   ): Promise<JobModel> {
-    const token = req.headers.authorization?.split(' ')[1];
-    const authenticatedUser =
-      await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasAdminPermission(
-      authenticatedUser,
-      token,
-    );
+    // const token = req.headers.authorization?.split(' ')[1];
+    // const authenticatedUser =
+    //   await this.identityAuthenticateApi.authenticate(token);
+    // await this.identityAuthenticateApi.hasAdminPermission(
+    //   authenticatedUser,
+    //   token,
+    // );
     return await this.jobManagementService.createJob(createJobRequestDto);
   }
 

@@ -4,7 +4,7 @@ import { JobManagementModule } from '@jobManagementModule/job-management.module'
 import { JobRepository } from '@jobManagementModule/persistence/repository/job.repository';
 import request from 'supertest';
 import { JobManagementService } from '../../core/service/job-management.service';
-import { IdentityAuthenticateApi } from '@src/module/shared/module/integration/interface/identity-integration.interface';
+import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 
 describe('JobController (e2e)', () => {
   let module: TestingModule;

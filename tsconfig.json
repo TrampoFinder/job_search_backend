@@ -24,29 +24,26 @@
     "noUnusedParameters": true,
     "outDir": "./dist",
     "paths": {
-      "@src/*": [
-        "src/*"
-      ],
       "@database/*": [
-        "database/*"
+        "./database/*"
       ],
       "@sharedModule/*": [
-        "src/module/shared/module/*"
+        "./src/module/shared/module/*"
       ],
       "@identityModule/*": [
-        "src/module/identity/*"
+        "./src/module/identity/*"
       ],
       "@jobManagementModule/*": [
-        "src/module/job-management/*"
+        "./src/module/job-management/*"
       ],
       "@sharedLibs/*": [
-        "src/module/shared/*"
+        "./src/module/shared/*"
       ],
       "@reportManagementModule/*": [
-        "src/module/report-management/*"
+        "./src/module/report-management/*"
       ],
       "@testInfra/*": [
-        "test/*"
+        "./test/*"
       ],
       "@resource/*": [
         "./resource/*"

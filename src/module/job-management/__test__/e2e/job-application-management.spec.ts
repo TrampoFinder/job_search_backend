@@ -7,7 +7,7 @@ import request from 'supertest';
 import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import { JobApplicationManagementService } from '@jobManagementModule/core/service/job-application-management.service';
 import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
-import { PrismaService } from '@src/module/shared/module/prisma/prisma.service';
+import { PrismaService } from '@sharedModule/prisma/prisma.service';
 
 describe('JobApplicationController (e2e)', () => {
   let module: TestingModule;

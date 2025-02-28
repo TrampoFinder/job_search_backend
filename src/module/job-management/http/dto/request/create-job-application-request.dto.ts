@@ -1,7 +1,5 @@
 import { JobApplicationProcessType } from '@jobManagementModule/core/model/job-application.model';
-import { Transform, TransformFnParams } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
-import sanitizeHtml from 'sanitize-html';
 
 export class CreateJobApplicationRequestDto {
   @IsNotEmpty()
