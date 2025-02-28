@@ -5,21 +5,65 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint', 'no-relative-import-paths', 'import'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
   ],
   root: true,
   env: {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project: './tsconfig.json',
+      },
+    },
+  },
+  ignorePatterns: ['.eslintrc.js', 'dist/'],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'import/no-restricted-paths': [
+      'error',
+      {
+        zones: [
+          {
+            target: './src/module/shared',
+            from: './src/module/job-managament',
+          },
+          {
+            target: './src/module/shared',
+            from: './src/module/report-managament',
+          },
+          {
+            target: './src/module/shared',
+            from: './src/module/identity',
+          },
+          {
+            target: './src/module/identity',
+            from: './src/module/job-managament',
+          },
+          {
+            target: './src/module/job-managament',
+            from: './src/module/identity',
+          },
+          {
+            target: './src/module/report-managament',
+            from: './src/module/job-managament',
+          },
+          {
+            target: './src/module/report-managament',
+            from: './src/module/identity',
+          },
+        ],
+      },
+    ],
   },
 };

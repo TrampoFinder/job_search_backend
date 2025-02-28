@@ -1,6 +1,5 @@
 import { JobApplicationProcessType } from '@jobManagementModule/core/model/job-application.model';
-import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateJobApplicationRequestDto {
   @IsOptional()

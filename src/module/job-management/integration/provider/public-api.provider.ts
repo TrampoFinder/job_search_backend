@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JobApplicationApi } from '@src/module/shared/module/integration/interface/job-application-integration.interface';
+import { JobApplicationApi } from '@sharedModule/integration/interface/job-application-integration.interface';
 import { JobApplicationManagementService } from '../../core/service/job-application-management.service';
 
 @Injectable()
