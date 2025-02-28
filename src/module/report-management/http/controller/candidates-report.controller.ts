@@ -17,7 +17,7 @@ import os from 'os';
 import { Response } from 'express';
 import { AuthenticatedRequest } from '@sharedModule/integration/interface/authenticate-request.interface';
 import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
-import { RestResponseInterceptor } from '@src/module/shared/util/interceptor/rest-response.interceptor';
+import { RestResponseInterceptor } from '@sharedLibs/util/interceptor/rest-response.interceptor';
 import { CandidatesReportNotFoundException } from '@reportManagementModule/core/exception/candidates-report-not-found.exception';
 import { InvalidFileReportGeneratorException } from '@reportManagementModule/core/exception/invalid-file-report-generator .exceptions';
 import { CandidatesReportService } from '@reportManagementModule/core/service/candidates-report.service';
