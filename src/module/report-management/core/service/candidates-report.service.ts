@@ -6,9 +6,40 @@ import { CandidateStatistic } from '@reportManagementModule/core/model/candidate
 @Injectable()
 export class CandidatesReportService {
   constructor(private candidatesReportRepository: CandidatesReportRepository) {}
+  getReportPaginate = async (
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    data: CandidateStatistic[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> => {
+    const candidateReport =
+      await this.candidatesReportRepository.getAverageApplications(
+        page,
+        pageSize,
+      );
+    if (!candidateReport) {
+      throw new CandidatesReportNotFoundException(
+        'No candidates  report found!',
+      );
+    }
+    const totalPages = Math.ceil(candidateReport.total / pageSize);
+    const previousPage = page > 1 ? page - 1 : null;
+    const nextPage = page < totalPages ? page + 1 : null;
+    return {
+      data: candidateReport.data,
+      total: candidateReport.total,
+      totalPages,
+      previousPage,
+      nextPage,
+    };
+  };
   getReport = async (): Promise<CandidateStatistic[]> => {
     const candidateReport =
-      await this.candidatesReportRepository.getAverageApplications();
+      await this.candidatesReportRepository.getAverageReport();
     if (!candidateReport) {
       throw new CandidatesReportNotFoundException(
         'No candidates  report found!',

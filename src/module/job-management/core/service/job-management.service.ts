@@ -11,7 +11,13 @@ export class JobManagementService {
     pageSize: number,
     location?: string,
     companyName?: string,
-  ): Promise<{ jobs: JobModel[]; total: number }> => {
+  ): Promise<{
+    data: JobModel[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> => {
     const filters: Record<string, any> = {};
     if (location) {
       filters['location'] = location;
@@ -19,7 +25,17 @@ export class JobManagementService {
     if (companyName) {
       filters['company'] = companyName;
     }
-    return await this.jobRepository.findAll(filters, page, pageSize);
+    const getJobs = await this.jobRepository.findAll(filters, page, pageSize);
+    const totalPages = Math.ceil(getJobs.total / pageSize);
+    const previousPage = page > 1 ? page - 1 : null;
+    const nextPage = page < totalPages ? page + 1 : null;
+    return {
+      data: getJobs.jobs,
+      total: getJobs.total,
+      totalPages,
+      previousPage,
+      nextPage,
+    };
   };
 
   createJob = async (data: CreateJobRequestDto): Promise<JobModel> => {

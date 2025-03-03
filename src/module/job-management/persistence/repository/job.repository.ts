@@ -21,8 +21,9 @@ export class JobRepository extends DefaultPrismaRepository {
       const total = await this.model.count({ where });
       const jobs = await this.model.findMany({
         where,
-        skip: (page - 1) * pageSize,
+        skip: pageSize * (page - 1),
         take: pageSize,
+        orderBy: { createdAt: 'asc' },
       });
       return { jobs, total };
     } catch (error) {

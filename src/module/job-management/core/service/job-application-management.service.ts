@@ -48,10 +48,31 @@ export class JobApplicationManagementService {
 
   getAllApplicationJobsByUserId = async (
     userId: string,
-  ): Promise<JobApplicationModel[]> => {
-    return await this.jobApplicationRepository.getAllApplicationJobsByUserId(
-      userId,
-    );
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    data: JobApplicationModel[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> => {
+    const getAllApplicationsByUserId =
+      await this.jobApplicationRepository.getAllApplicationJobsByUserId(
+        userId,
+        page,
+        pageSize,
+      );
+    const totalPages = Math.ceil(getAllApplicationsByUserId.total / pageSize);
+    const previousPage = page > 1 ? page - 1 : null;
+    const nextPage = page < totalPages ? page + 1 : null;
+    return {
+      data: getAllApplicationsByUserId.jobApplications,
+      total: getAllApplicationsByUserId.total,
+      totalPages,
+      previousPage,
+      nextPage,
+    };
   };
 
   getJobApplications = async (

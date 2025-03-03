@@ -8,6 +8,11 @@ import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/ide
 import { JobApplicationManagementService } from '@jobManagementModule/core/service/job-application-management.service';
 import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
 import { PrismaService } from '@sharedModule/prisma/prisma.service';
+import { randomInt } from 'crypto';
+import JobModel from '@jobManagementModule/core/model/job.model';
+import JobApplicationModel, {
+  JobApplicationProcessType,
+} from '@jobManagementModule/core/model/job-application.model';
 
 describe('JobApplicationController (e2e)', () => {
   let module: TestingModule;
@@ -133,35 +138,61 @@ describe('JobApplicationController (e2e)', () => {
   });
   describe('JobApplication (GET)', () => {
     it('should retrieve applied jobs list', async () => {
-      const jobInput = {
-        title: 'Test Job',
-        company: 'Job in R. Rego Freitas',
-        url: 'https://republicarr.jobs.com.br/',
-        location: 'São Paulo, BR',
-      };
-      const jobOutput = await jobManagementService.createJob(jobInput);
-      const jobApplicationOutput =
-        await jobApplicationManagementService.applyForJob(
-          jobOutput.id,
-          '647edd99-34b9-436e-9398-bde6c93cec4d',
-          {
-            title: jobInput.title,
-            url: jobInput.url,
-            status: 'APPLIED',
-            note: null,
-          },
+      const dataJobs: JobModel[] = [];
+      for (let i = 0; i < 15; i++) {
+        const jobInput = {
+          title: `Test Job${randomInt(15)}`,
+          company: 'Job in R. Rego Freitas',
+          url: 'https://republicarr.jobs.com.br/',
+          location: 'São Paulo, BR',
+        };
+        dataJobs.push(await jobManagementService.createJob(jobInput));
+      }
+      const jobApplication: JobApplicationModel[] = [];
+      for (let i = 0; i < 15; i++) {
+        const jobApplicationInput = {
+          title: dataJobs[i].title,
+          url: dataJobs[i].url,
+          status: JobApplicationProcessType.APPLIED,
+          note: null,
+        };
+        jobApplication.push(
+          await jobApplicationManagementService.applyForJob(
+            dataJobs[i].id,
+            '647edd99-34b9-436e-9398-bde6c93cec4d',
+            jobApplicationInput,
+          ),
         );
-      const response = await request(app.getHttpServer())
+      }
+
+      await request(app.getHttpServer())
         .get('/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/history')
-        .expect(HttpStatus.OK);
-      expect(response.body[0]).toMatchObject({
-        title: jobApplicationOutput.title,
-        url: jobApplicationOutput.url,
-        jobId: jobOutput.id,
-        userId: '647edd99-34b9-436e-9398-bde6c93cec4d',
-        status: jobApplicationOutput.status,
-        note: jobApplicationOutput.note,
-      });
+        .expect(HttpStatus.OK)
+        .expect((res) => {
+          expect(res.body.total).toBe(15);
+          expect(res.body.totalPages).toBe(2);
+          expect(res.body.previousPage).toBe(null);
+          expect(res.body.nextPage).toBe(2);
+          expect(
+            res.body.data.map((item: JobApplicationModel) => ({
+              title: item.title,
+              url: item.url,
+              userId: item.userId,
+              jobId: item.jobId,
+              status: item.status,
+              note: item.note,
+            })),
+          ).toEqual(
+            jobApplication.slice(0, 10).map((item) => ({
+              title: item.title,
+              url: item.url,
+              userId: item.userId,
+              jobId: item.jobId,
+              status: item.status,
+              note: item.note,
+            })),
+          );
+        });
     });
   });
   describe('JobApplication (PUT)', () => {
