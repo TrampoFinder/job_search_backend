@@ -5,6 +5,9 @@ import { JobRepository } from '@jobManagementModule/persistence/repository/job.r
 import request from 'supertest';
 import { JobManagementService } from '../../core/service/job-management.service';
 import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
+import JobModel from '@jobManagementModule/core/model/job.model';
+import path from 'path';
+import fs from 'fs';
 
 describe('JobController (e2e)', () => {
   let module: TestingModule;
@@ -47,6 +50,7 @@ describe('JobController (e2e)', () => {
 
   afterAll(async () => {
     await module.close();
+    fs.rmSync('./uploads', { recursive: true, force: true });
   });
 
   describe('/job-management (POST)', () => {
@@ -70,6 +74,19 @@ describe('JobController (e2e)', () => {
             url: input.url,
           });
         });
+    });
+    it('should create a job successfully with excel', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/job-management/uploadJobs')
+        .attach(
+          'file',
+          path.resolve(
+            __dirname,
+            '../../../../../test/fixtures/use_case_plan_50.xlsx',
+          ),
+        )
+        .expect(HttpStatus.CREATED);
+      expect(response.body).toHaveLength(49);
     });
     it('should throw error when the job URL is invalid', async () => {
       const input = {
@@ -129,6 +146,44 @@ describe('JobController (e2e)', () => {
         expect(res.body).toEqual({
           companyCount: 1,
         });
+      });
+  });
+  it('retrieve jobs', async () => {
+    const data: JobModel[] = [];
+    let count = 0;
+    for (let i = 0; i < 15; i++) {
+      const jobInput = {
+        title: `Test Job${count}`,
+        company: 'Job in R. Rego Freitas',
+        url: 'https://republicarr.jobs.com.br/',
+        location: 'São Paulo, BR',
+      };
+      count++;
+      data.push(await jobManagementService.createJob(jobInput));
+    }
+    await request(app.getHttpServer())
+      .get(`/job-management`)
+      .expect(HttpStatus.OK)
+      .expect((res) => {
+        expect(res.body.total).toBe(15);
+        expect(res.body.totalPages).toBe(2);
+        expect(res.body.previousPage).toBe(null);
+        expect(res.body.nextPage).toBe(2);
+        expect(
+          res.body.data.map((item: JobModel) => ({
+            title: item.title,
+            company: item.company,
+            url: item.url,
+            location: item.location,
+          })),
+        ).toEqual(
+          data.slice(0, 10).map((item) => ({
+            title: item.title,
+            company: item.company,
+            url: item.url,
+            location: item.location,
+          })),
+        );
       });
   });
 });

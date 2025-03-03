@@ -9,6 +9,7 @@ import path from 'path';
 import os from 'os';
 import { ReportManagementModule } from '@reportManagementModule/report-management.module';
 import { CandidatesReportRepository } from '@reportManagementModule/persistence/repository/candidates-report.repository';
+import { CandidateStatistic } from '@reportManagementModule/core/model/candidates-statistic.model';
 describe('ReportManagement (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
@@ -123,17 +124,34 @@ describe('ReportManagement (e2e)', () => {
         '/candidates-report/view',
       );
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body[0]).toMatchObject({
-        userId: 'test-user',
-        fullName: 'Test User',
-        notProcessing: '0.00',
-        applied: '33.33',
-        inProgress: '33.33',
-        approved: '0.00',
-        rejected: '33.33',
-        closed: '0.00',
-      });
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.total).toBe(1);
+      expect(response.body.totalPages).toBe(1);
+      expect(response.body.previousPage).toBe(null);
+      expect(response.body.nextPage).toBe(null);
+      expect(
+        response.body.data.map((item: CandidateStatistic) => ({
+          userId: item.userId,
+          fullName: item.fullName,
+          notProcessing: item.notProcessing,
+          applied: item.applied,
+          inProgress: item.inProgress,
+          approved: item.approved,
+          rejected: item.rejected,
+          closed: item.closed,
+        })),
+      ).toEqual([
+        {
+          userId: 'test-user',
+          fullName: 'Test User',
+          notProcessing: '0.00',
+          applied: '33.33',
+          inProgress: '33.33',
+          approved: '0.00',
+          rejected: '33.33',
+          closed: '0.00',
+        },
+      ]);
     });
     it('returns a file of candidates with average applications', async () => {
       const unlinkSpy = jest

@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UsePipes,
@@ -65,14 +66,26 @@ export class JobApplicationController {
   async getAllApplicationJobsByUserId(
     @Param('userId') userId: string,
     @Req() req: AuthenticatedRequest,
-  ): Promise<JobApplicationModel[]> {
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ): Promise<{
+    data: JobApplicationModel[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> {
     const token = req.headers.authorization?.split(' ')[1];
+    const pageNumber = parseInt(page) || 1;
+    const pageSizeNumber = parseInt(pageSize) || 10;
     const userAuthenticated =
       await this.identityAuthenticateApi.authenticate(token);
     await this.identityAuthenticateApi.hasPermission(userAuthenticated, userId);
     const jobApplications =
       await this.jobApplicationManagementSerivce.getAllApplicationJobsByUserId(
         userId,
+        pageNumber,
+        pageSizeNumber,
       );
 
     return jobApplications;

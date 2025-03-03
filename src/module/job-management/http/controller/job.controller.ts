@@ -25,7 +25,7 @@ import { RestResponseInterceptor } from '@sharedLibs/util/interceptor/rest-respo
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import * as ExcelJS from 'exceljs';
-import { Readable } from 'stream';
+import { CreateJobResponseDto } from '../dto/response/created-job-response.dto';
 
 @Controller('job-management')
 export class JobController {
@@ -40,34 +40,36 @@ export class JobController {
     @Query('pageSize') pageSize: string,
     @Query('location') location?: string,
     @Query('companyName') companyName?: string,
-  ): Promise<{ jobs: JobModel[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: JobModel[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> {
     const pageNumber = parseInt(page) || 1;
     const pageSizeNumber = parseInt(pageSize) || 10;
-    const { jobs, total } = await this.jobManagementService.getAllJobs(
+
+    return await this.jobManagementService.getAllJobs(
       pageNumber,
       pageSizeNumber,
       location,
       companyName,
     );
-    return {
-      jobs,
-      total,
-      totalPages: Math.ceil(total / pageSizeNumber),
-    };
   }
   @Post('register')
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createJobRequestDto: CreateJobRequestDto,
-    // @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest,
   ): Promise<JobModel> {
-    // const token = req.headers.authorization?.split(' ')[1];
-    // const authenticatedUser =
-    //   await this.identityAuthenticateApi.authenticate(token);
-    // await this.identityAuthenticateApi.hasAdminPermission(
-    //   authenticatedUser,
-    //   token,
-    // );
+    const token = req.headers.authorization?.split(' ')[1];
+    const authenticatedUser =
+      await this.identityAuthenticateApi.authenticate(token);
+    await this.identityAuthenticateApi.hasAdminPermission(
+      authenticatedUser,
+      token,
+    );
     return await this.jobManagementService.createJob(createJobRequestDto);
   }
 
@@ -112,11 +114,11 @@ export class JobController {
       },
     }),
   )
-  @UseInterceptors(new RestResponseInterceptor(CreateJobRequestDto))
+  @UseInterceptors(new RestResponseInterceptor(CreateJobResponseDto))
   async uploadJobs(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: AuthenticatedRequest,
-  ): Promise<CreateJobRequestDto[]> {
+  ): Promise<CreateJobResponseDto[]> {
     const token = req.headers.authorization?.split(' ')[1];
     const authenticatedUser =
       await this.identityAuthenticateApi.authenticate(token);
@@ -129,22 +131,26 @@ export class JobController {
     }
     try {
       const workbook = new ExcelJS.Workbook();
-      const bufferStream = new Readable();
-      bufferStream.push(file.buffer);
-      bufferStream.push(null);
-      await workbook.xlsx.read(bufferStream);
-      const worksheet = workbook.getWorksheet(1);
+      await workbook.xlsx.readFile(file.path);
+      const worksheet = workbook.getWorksheet(4);
       const jobRequests: CreateJobRequestDto[] = [];
       if (!worksheet) {
         throw new BadRequestException('No data found in the provided file.');
       }
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
+        const urlValue = row.getCell(6).value;
+        const urlParse =
+          urlValue &&
+          typeof urlValue === 'object' &&
+          (urlValue as any).hyperlink
+            ? (urlValue as any).hyperlink
+            : '';
         const jobRequestDto: CreateJobRequestDto = {
           company: row.getCell(1).value?.toString() || '',
-          title: row.getCell(3).value?.toString() || '',
-          url: row.getCell(4).value?.toString() || '',
-          location: row.getCell(5).value?.toString() || '',
+          title: row.getCell(5).value?.toString() || '',
+          url: urlParse,
+          location: row.getCell(7).value?.toString() || '',
         };
         jobRequests.push(jobRequestDto);
       });

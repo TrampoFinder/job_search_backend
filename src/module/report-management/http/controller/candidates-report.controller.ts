@@ -21,7 +21,10 @@ import { RestResponseInterceptor } from '@sharedLibs/util/interceptor/rest-respo
 import { CandidatesReportNotFoundException } from '@reportManagementModule/core/exception/candidates-report-not-found.exception';
 import { InvalidFileReportGeneratorException } from '@reportManagementModule/core/exception/invalid-file-report-generator .exceptions';
 import { CandidatesReportService } from '@reportManagementModule/core/service/candidates-report.service';
-import { CandidatesStatisticDto } from '@reportManagementModule/http/dto/candidates-statistic.dto';
+import {
+  CandidatesStatisticDto,
+  CandidatesStatisticList,
+} from '@reportManagementModule/http/dto/candidates-statistic.dto';
 import { JobApplicationApi } from '@sharedModule/integration/interface/job-application-integration.interface';
 import { CandidatesReportDto } from '../dto/candidates-report.dto';
 
@@ -39,7 +42,15 @@ export class CandidatesReportController {
   @UseInterceptors(new RestResponseInterceptor(CandidatesStatisticDto))
   async getCandidatesViewReport(
     @Req() req: AuthenticatedRequest,
-  ): Promise<CandidatesStatisticDto[]> {
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ): Promise<{
+    data: CandidatesStatisticList[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> {
     const token = req.headers.authorization?.split(' ')[1];
     const autheticatedUser =
       await this.identityAuthenticateApi.authenticate(token);
@@ -47,7 +58,12 @@ export class CandidatesReportController {
       autheticatedUser,
       token,
     );
-    return await this.candidatesReportService.getReport();
+    const pageNumber = parseInt(page) || 1;
+    const pageSizeNumber = parseInt(pageSize) || 10;
+    return await this.candidatesReportService.getReportPaginate(
+      pageNumber,
+      pageSizeNumber,
+    );
   }
 
   @Get('download')

@@ -16,9 +16,21 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
   }
   getAllApplicationJobsByUserId = async (
     userId: string,
-  ): Promise<JobApplicationModel[]> => {
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<{
+    jobApplications: JobApplicationModel[];
+    total: number;
+  }> => {
     try {
-      return this.model.findMany({ where: { userId } });
+      const jobApplications = await this.model.findMany({
+        where: { userId },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'asc' },
+      });
+      const total = await this.model.count({ where: { userId } });
+      return { jobApplications, total };
     } catch (error) {
       this.handleAndThrowError(error);
     }

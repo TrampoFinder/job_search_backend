@@ -10,9 +10,42 @@ export class CandidatesReportRepository extends DefaultPrismaRepository {
     super();
     this.model = prismaService.userJobApplicationAvg;
   }
-  getAverageApplications = async (): Promise<
-    CandidateStatistic[] | undefined
+  getAverageApplications = async (
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<
+    | {
+        data: CandidateStatistic[];
+        total: number;
+      }
+    | undefined
   > => {
+    try {
+      const average = await this.model.findMany({
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { fullName: 'asc' },
+      });
+      if (!average) {
+        return;
+      }
+      const candidateStatistic = average.map((item) => ({
+        userId: item.userId,
+        fullName: item.fullName!,
+        notProcessing: (item.notProcessing.toNumber() * 100).toFixed(2),
+        applied: (item.applied.toNumber() * 100).toFixed(2),
+        inProgress: (item.inProgress.toNumber() * 100).toFixed(2),
+        approved: (item.approved.toNumber() * 100).toFixed(2),
+        rejected: (item.rejected.toNumber() * 100).toFixed(2),
+        closed: (item.closed.toNumber() * 100).toFixed(2),
+      }));
+      const total = await this.model.count();
+      return { data: candidateStatistic, total };
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
+  getAverageReport = async (): Promise<CandidateStatistic[] | undefined> => {
     try {
       const average = await this.model.findMany();
       if (!average) {

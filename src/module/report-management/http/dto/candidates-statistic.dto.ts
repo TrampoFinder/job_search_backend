@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
-import { IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export class CandidatesStatisticDto {
+export class CandidatesStatisticList {
   @IsUUID(4)
   @Expose()
   userId: string;
@@ -26,4 +26,28 @@ export class CandidatesStatisticDto {
   @IsNumber()
   @Expose()
   closed: string;
+}
+
+export class CandidatesStatisticDto {
+  @Expose()
+  data: CandidatesStatisticList[];
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  total?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  totalPages?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  previousPage?: number | null;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  nextPage?: number | null;
 }
