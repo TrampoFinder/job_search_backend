@@ -47,6 +47,39 @@ export class UserRepository extends DefaultPrismaRepository {
       this.handleAndThrowError(error);
     }
   };
+
+  update = async (
+    userId: string,
+    data: Prisma.UserUpdateInput,
+  ): Promise<UserModel> => {
+    try {
+      const updatedUser = await this.model.update({
+        where: {
+          id: userId,
+        },
+        data,
+      });
+      return updatedUser;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
+
+  delete = async (userId: string): Promise<UserModel> => {
+    try {
+      const deletedUser = await this.model.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+      return deletedUser;
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
   clear = async (): Promise<{ count: number }> => {
     try {
       return await this.model.deleteMany();

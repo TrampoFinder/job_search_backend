@@ -32,11 +32,11 @@ export class AuthGuard implements CanActivate {
       });
       const user = await this.userManagement.getUserById(payload.sub);
       if (!user) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('Credentials are not authorized');
       }
       request.user = user;
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Credentials are not authorized');
     }
     return true;
   };
