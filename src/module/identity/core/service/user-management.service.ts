@@ -31,4 +31,16 @@ export class UserManagementService {
     if (!user) throw new UserNotFoundException('User not found!');
     return user;
   };
+
+  updateUser = async (userId: string, data: any): Promise<UserModel> => {
+    const user = await this.userRepository.findByOne({ id: userId });
+    const emailExists = await this.userRepository.findByEmail(data.email);
+    if (!user) throw new UserNotFoundException('User not found!');
+    if (emailExists) throw new EmailAlreadyExists('Email already in use!');
+    return await this.userRepository.update(userId, data);
+  };
+
+  deleteUser = async (userId: string): Promise<void> => {
+    await this.userRepository.delete(userId);
+  };
 }

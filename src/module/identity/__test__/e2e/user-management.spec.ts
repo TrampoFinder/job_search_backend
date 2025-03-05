@@ -4,13 +4,14 @@ import { IdentityModule } from '@identityModule/identity.module';
 import { UserRepository } from '@identityModule/persistence/repository/user.repository';
 import request from 'supertest';
 import { UserManagementService } from '../../core/service/user-management.service';
+import { AuthService } from '@identityModule/core/service/authentication.service';
 
 describe('UserManagement (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
   let userRepository: UserRepository;
   let userManagementService: UserManagementService;
-
+  let authService: AuthService;
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [IdentityModule],
@@ -21,6 +22,7 @@ describe('UserManagement (e2e)', () => {
     userManagementService = module.get<UserManagementService>(
       UserManagementService,
     );
+    authService = module.get<AuthService>(AuthService);
     userRepository = module.get<UserRepository>(UserRepository);
   });
 
@@ -64,6 +66,124 @@ describe('UserManagement (e2e)', () => {
         .post('/users/register')
         .send(userRegister)
         .expect(409);
+    });
+  });
+  describe('/users/:id (PATCH)', () => {
+    it('should update a user successfully', async () => {
+      const userRegister = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      };
+      const userOutput = await userManagementService.createUser(userRegister);
+      const signInOutput = await authService.signIn({
+        email: userRegister.email,
+        password: userRegister.password,
+      });
+
+      await request(app.getHttpServer())
+        .patch(`/users/${userOutput.id}`)
+        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
+        .send({ email: 'johndoe2@example.com', password: 'password987' })
+        .expect(204);
+    });
+    it('should return 409 Conflict when updating with an existing email', async () => {
+      const userRegister = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      };
+      const userOutput = await userManagementService.createUser(userRegister);
+      const signInOutput = await authService.signIn({
+        email: userRegister.email,
+        password: userRegister.password,
+      });
+
+      const response = await request(app.getHttpServer())
+        .patch(`/users/${userOutput.id}`)
+        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
+        .send({ email: 'johndoe@example.com' })
+        .expect(409);
+      expect(response.body).toEqual({
+        message: 'Email already in use!',
+        statusCode: 409,
+        error: 'Conflict',
+      });
+    });
+    it('should return 404 NotFound when updating with an invalid user id', async () => {
+      const userRegister = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      };
+      await userManagementService.createUser(userRegister);
+      const signInOutput = await authService.signIn({
+        email: userRegister.email,
+        password: userRegister.password,
+      });
+      const response = await request(app.getHttpServer())
+        .patch('/users/testing123')
+        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
+        .send({ email: 'johndoe@example.com' })
+        .expect(404);
+      expect(response.body).toEqual({
+        message: 'User not found!',
+        statusCode: 404,
+        error: 'Not Found',
+      });
+    });
+  });
+  describe('/users/:id (DELETE)', () => {
+    it('should delete a user successfully', async () => {
+      const userRegister = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      };
+      const userOutput = await userManagementService.createUser(userRegister);
+      const signInOutput = await authService.signIn({
+        email: userRegister.email,
+        password: userRegister.password,
+      });
+      await request(app.getHttpServer())
+        .delete(`/users/${userOutput.id}`)
+        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
+        .expect(204);
+      const response = await request(app.getHttpServer())
+        .get(`/users/${userOutput.id}`)
+        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
+        .expect(404);
+      expect(response.body).toEqual({
+        message: 'User not found!',
+        statusCode: 404,
+        error: 'Not Found',
+      });
+    });
+    it('should return 404 NotFound when deleting with an invalid user id', async () => {
+      const userRegister = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe@example.com',
+        password: 'password123',
+      };
+      await userManagementService.createUser(userRegister);
+      const signInOutput = await authService.signIn({
+        email: userRegister.email,
+        password: userRegister.password,
+      });
+      const response = await request(app.getHttpServer())
+        .delete('/users/testing123')
+        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
+        .expect(404);
+      expect(response.body).toEqual({
+        message: 'User not found!',
+        statusCode: 404,
+        error: 'Not Found',
+      });
     });
   });
 });
