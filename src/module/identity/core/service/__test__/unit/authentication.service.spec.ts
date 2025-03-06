@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserModel } from '@identityModule/core/model/user.model';
 import crypto from 'crypto';
+import { ConfigModule } from '@sharedModule/config/config.module';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -11,6 +12,7 @@ describe('AuthService', () => {
   let jwtService: JwtService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule.forRoot()],
       providers: [
         AuthService,
         {
