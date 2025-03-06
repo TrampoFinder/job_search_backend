@@ -17,10 +17,6 @@ export class JobRepository extends DefaultPrismaRepository {
     pageSize: number = 10,
   ): Promise<{ jobs: JobModel[]; total: number }> => {
     try {
-      const cleanedFields = this.cleanParams(fields);
-      if (Object.keys(cleanedFields).length === 0) {
-        throw new UnauthorizedException();
-      }
       const where = fields ? { ...fields } : {};
       const total = await this.model.count({ where });
       const jobs = await this.model.findMany({
