@@ -23,7 +23,7 @@ export class JobRepository extends DefaultPrismaRepository {
         where,
         skip: pageSize * (page - 1),
         take: pageSize,
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: 'desc' },
       });
       return { jobs, total };
     } catch (error) {

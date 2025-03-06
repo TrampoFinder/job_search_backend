@@ -27,7 +27,7 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
         where: { userId },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: 'desc' },
       });
       const total = await this.model.count({ where: { userId } });
       return { jobApplications, total };
