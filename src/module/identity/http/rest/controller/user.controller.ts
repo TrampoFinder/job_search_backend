@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -18,7 +19,8 @@ import { AuthGuard } from '@identityModule/http/rest/guard/auth.guard';
 import { EmailAlreadyExists } from '@identityModule/core/exception/email-already-exists.exception';
 import { Response } from 'express';
 import { UpdateUserRequestDto } from '../dto/request/update-user-request.dto';
-import { UserNotFoundException } from '@identityModule/core/exception/user-not-found.exception';
+import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
+import { PermissionGuard } from '../guard/permission.guard';
 
 @Controller('users')
 export class UserController {
@@ -62,7 +64,7 @@ export class UserController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, PermissionGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async getUserById(
     @Param('id') userId: string,
@@ -82,7 +84,7 @@ export class UserController {
         deletedAt: user.deletedAt,
       });
     } catch (error) {
-      if (error instanceof UserNotFoundException) {
+      if (error instanceof NotFoundException) {
         return res.status(HttpStatus.NOT_FOUND).send({
           message: error.message,
           statusCode: HttpStatus.NOT_FOUND,
@@ -94,7 +96,7 @@ export class UserController {
   }
   @Patch(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, PermissionGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async updateUserById(
     @Param('id') userId: string,
@@ -112,13 +114,21 @@ export class UserController {
           error: 'Conflict',
         });
       }
-      if (error instanceof UserNotFoundException) {
-        return res.status(HttpStatus.NOT_FOUND).send({
-          message: error.message,
-          statusCode: HttpStatus.NOT_FOUND,
-          error: 'Not Found',
-        });
-      }
+      throw error;
+    }
+  }
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard, PermissionGuard)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async deleteUserById(
+    @Param('id') userId: string,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      await this.userManagementService.deleteUser(userId);
+      return res.status(HttpStatus.NO_CONTENT).send();
+    } catch (error) {
       throw error;
     }
   }

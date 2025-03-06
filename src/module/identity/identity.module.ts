@@ -10,6 +10,8 @@ import { AuthController } from './http/rest/controller/auth.controller';
 import { UserController } from './http/rest/controller/user.controller';
 import { IdentityPublicApiProvider } from './integration/provider/public-api.provider';
 import { UserRepository } from './persistence/repository/user.repository';
+import { APP_FILTER } from '@nestjs/core';
+import { DomainExceptionFilter } from '@sharedModule/integration/http/filter/domain-exception.filter';
 
 @Module({
   imports: [
@@ -30,6 +32,10 @@ import { UserRepository } from './persistence/repository/user.repository';
     UserManagementService,
     UserRepository,
     IdentityPublicApiProvider,
+    {
+      provide: APP_FILTER,
+      useClass: DomainExceptionFilter,
+    },
   ],
   exports: [IdentityPublicApiProvider],
 })

@@ -54,7 +54,7 @@ describe('UserManagement (e2e)', () => {
         .expect(201);
     });
 
-    it('should create a new user with email exists', async () => {
+    it('should try create a new user with email exists', async () => {
       const userRegister = {
         firstName: 'John',
         lastName: 'Doe',
@@ -112,29 +112,6 @@ describe('UserManagement (e2e)', () => {
         error: 'Conflict',
       });
     });
-    it('should return 404 NotFound when updating with an invalid user id', async () => {
-      const userRegister = {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'johndoe@example.com',
-        password: 'password123',
-      };
-      await userManagementService.createUser(userRegister);
-      const signInOutput = await authService.signIn({
-        email: userRegister.email,
-        password: userRegister.password,
-      });
-      const response = await request(app.getHttpServer())
-        .patch('/users/testing123')
-        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
-        .send({ email: 'johndoe@example.com' })
-        .expect(404);
-      expect(response.body).toEqual({
-        message: 'User not found!',
-        statusCode: 404,
-        error: 'Not Found',
-      });
-    });
   });
   describe('/users/:id (DELETE)', () => {
     it('should delete a user successfully', async () => {
@@ -153,17 +130,8 @@ describe('UserManagement (e2e)', () => {
         .delete(`/users/${userOutput.id}`)
         .set('Authorization', `Bearer ${signInOutput.accessToken}`)
         .expect(204);
-      const response = await request(app.getHttpServer())
-        .get(`/users/${userOutput.id}`)
-        .set('Authorization', `Bearer ${signInOutput.accessToken}`)
-        .expect(404);
-      expect(response.body).toEqual({
-        message: 'User not found!',
-        statusCode: 404,
-        error: 'Not Found',
-      });
     });
-    it('should return 404 NotFound when deleting with an invalid user id', async () => {
+    it('should return 403 Forbidden when try deleting with valid token other user', async () => {
       const userRegister = {
         firstName: 'John',
         lastName: 'Doe',
@@ -171,19 +139,21 @@ describe('UserManagement (e2e)', () => {
         password: 'password123',
       };
       await userManagementService.createUser(userRegister);
+      const userRegister2 = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'johndoe2@example.com',
+        password: 'password123',
+      };
+      const userOutput2 = await userManagementService.createUser(userRegister2);
       const signInOutput = await authService.signIn({
         email: userRegister.email,
         password: userRegister.password,
       });
-      const response = await request(app.getHttpServer())
-        .delete('/users/testing123')
+      await request(app.getHttpServer())
+        .delete(`/users/${userOutput2.id}`)
         .set('Authorization', `Bearer ${signInOutput.accessToken}`)
-        .expect(404);
-      expect(response.body).toEqual({
-        message: 'User not found!',
-        statusCode: 404,
-        error: 'Not Found',
-      });
+        .expect(403);
     });
   });
 });

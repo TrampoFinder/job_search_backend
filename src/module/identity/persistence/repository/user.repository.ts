@@ -17,8 +17,12 @@ export class UserRepository extends DefaultPrismaRepository {
     fields: Partial<QueryableFields>,
   ): Promise<UserModel | undefined> => {
     try {
+      const cleanedFields = this.cleanParams(fields);
+      if (Object.keys(cleanedFields).length === 0) {
+        return;
+      }
       const user = await this.model.findFirst({ where: fields });
-      if (!user) {
+      if (!user || user.deletedAt) {
         return;
       }
       return user;
@@ -38,7 +42,12 @@ export class UserRepository extends DefaultPrismaRepository {
 
   findByEmail = async (email: string): Promise<UserModel | undefined> => {
     try {
-      const user = await this.model.findFirst({ where: { email } });
+      if (!email) return;
+      const user = await this.model.findFirst({
+        where: {
+          email: email,
+        },
+      });
       if (!user) {
         return;
       }
