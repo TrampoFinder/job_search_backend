@@ -1,5 +1,5 @@
 import { PrismaService } from '@sharedModule/prisma/prisma.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DefaultPrismaRepository } from '@sharedModule/prisma/default.prisma.repository';
 import JobModel from '@jobManagementModule/core/model/job.model';
 import { Prisma } from '@prisma/client';
