@@ -48,6 +48,10 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
     fields: Partial<QueryableFields>,
   ): Promise<JobApplicationModel | undefined> => {
     try {
+      const cleanedFields = this.cleanParams(fields);
+      if (Object.keys(cleanedFields).length === 0) {
+        return;
+      }
       const jobApplicationProcess = await this.model.findFirst({
         where: fields,
       });

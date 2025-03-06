@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
 import { UserModel } from '@identityModule/core/model/user.model';
-import { UserNotFoundException } from '@identityModule/core/exception/user-not-found.exception';
+import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
 import { UserRepository } from '@identityModule/persistence/repository/user.repository';
 import { CreateUserRequestDto } from '@identityModule/http/rest/dto/request/create-user-request.dto';
 import { EmailAlreadyExists } from '../exception/email-already-exists.exception';
+import { UpdateUserRequestDto } from '@identityModule/http/rest/dto/request/update-user-request.dto';
 
 export const PASSWORD_HASH_SALT = crypto.randomBytes(20).toString('hex');
 
@@ -26,21 +27,28 @@ export class UserManagementService {
     return await this.userRepository.save(newUser);
   };
 
-  getUserById = async (id: string): Promise<UserModel> => {
-    const user = await this.userRepository.findByOne({ id });
-    if (!user) throw new UserNotFoundException('User not found!');
+  getUserById = async (userId: string): Promise<UserModel> => {
+    const user = await this.userRepository.findByOne({
+      id: userId,
+    });
+    if (!user) throw new NotFoundException('User not found!');
     return user;
   };
 
-  updateUser = async (userId: string, data: any): Promise<UserModel> => {
+  updateUser = async (
+    userId: string,
+    data: UpdateUserRequestDto,
+  ): Promise<UserModel> => {
     const user = await this.userRepository.findByOne({ id: userId });
+    if (!user) throw new NotFoundException('User not found!');
     const emailExists = await this.userRepository.findByEmail(data.email);
-    if (!user) throw new UserNotFoundException('User not found!');
     if (emailExists) throw new EmailAlreadyExists('Email already in use!');
     return await this.userRepository.update(userId, data);
   };
 
   deleteUser = async (userId: string): Promise<void> => {
+    const user = await this.userRepository.findByOne({ id: userId });
+    if (!user) throw new NotFoundException('User not found!');
     await this.userRepository.delete(userId);
   };
 }

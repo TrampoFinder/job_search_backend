@@ -24,9 +24,6 @@
     "noUnusedParameters": true,
     "outDir": "./dist",
     "paths": {
-      "@database/*": [
-        "./database/*"
-      ],
       "@sharedModule/*": [
         "./src/module/shared/module/*"
       ],
