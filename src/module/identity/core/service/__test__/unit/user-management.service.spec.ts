@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '@sharedModule/prisma/prisma.service';
 import { UserModel } from '@identityModule/core/model/user.model';
 import { ConfigModule } from '@sharedModule/config/config.module';
+import { UpdateUserRequestDto } from '@identityModule/http/rest/dto/request/update-user-request.dto';
 
 describe('UserManagement', () => {
   let userManagementService: UserManagementService;
@@ -59,6 +60,49 @@ describe('UserManagement', () => {
       expect(password).toBe('test');
       expect(firstName).toBe('Test');
       expect(lastName).toBe('User');
+    });
+    it('update user by id', async () => {
+      const mockUser = {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        username: 'test',
+        password: 'test',
+        salt: 'random_salt',
+      };
+      const newUser = UserModel.create(mockUser);
+      jest.spyOn(userRepository, 'findByOne').mockResolvedValueOnce(newUser);
+      const mockUserUpdate = {
+        email: 'test2@example.com',
+      } as UpdateUserRequestDto;
+      jest
+        .spyOn(userRepository, 'update')
+        .mockResolvedValueOnce({ ...newUser, ...mockUserUpdate });
+      const updateUser = await userManagementService.updateUser(
+        newUser.id,
+        mockUserUpdate,
+      );
+      const { email, password, firstName, lastName, id } = updateUser;
+      expect(id).toBe(newUser.id);
+      expect(email).toBe('test2@example.com');
+      expect(password).toBe('test');
+      expect(firstName).toBe('Test');
+      expect(lastName).toBe('User');
+    });
+    it('delete user by id', async () => {
+      const mockUser = {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        username: 'test',
+        password: 'test',
+        salt: 'random_salt',
+      };
+      const newUser = UserModel.create(mockUser);
+      jest.spyOn(userRepository, 'findByOne').mockResolvedValueOnce(newUser);
+      jest.spyOn(userRepository, 'delete').mockResolvedValueOnce(undefined);
+      const deleteUser = await userManagementService.deleteUser(newUser.id);
+      expect(deleteUser).toBeUndefined();
     });
   });
 });

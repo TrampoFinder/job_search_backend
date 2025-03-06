@@ -74,9 +74,9 @@ export class UserRepository extends DefaultPrismaRepository {
     }
   };
 
-  delete = async (userId: string): Promise<UserModel> => {
+  delete = async (userId: string): Promise<void> => {
     try {
-      const deletedUser = await this.model.update({
+      await this.model.update({
         where: {
           id: userId,
         },
@@ -84,7 +84,6 @@ export class UserRepository extends DefaultPrismaRepository {
           deletedAt: new Date(),
         },
       });
-      return deletedUser;
     } catch (error) {
       this.handleAndThrowError(error);
     }
