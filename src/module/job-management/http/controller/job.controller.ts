@@ -61,15 +61,14 @@ export class JobController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createJobRequestDto: CreateJobRequestDto,
-    @Req() req: AuthenticatedRequest,
+    // @Req() req: AuthenticatedRequest,
   ): Promise<JobModel> {
-    const token = req.headers.authorization?.split(' ')[1];
-    const authenticatedUser =
-      await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasAdminPermission(
-      authenticatedUser,
-      token,
-    );
+    // const token = req.headers.authorization?.split(' ')[1];
+    // const authenticatedUser =
+    //   await this.identityAuthenticateApi.authenticate(token);
+    // await this.identityAuthenticateApi.hasAdminPermission(
+    //   authenticatedUser,
+    // );
     return await this.jobManagementService.createJob(createJobRequestDto);
   }
 
@@ -122,10 +121,7 @@ export class JobController {
     const token = req.headers.authorization?.split(' ')[1];
     const authenticatedUser =
       await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasAdminPermission(
-      authenticatedUser,
-      token,
-    );
+    await this.identityAuthenticateApi.hasAdminPermission(authenticatedUser);
     if (!file) {
       throw new BadRequestException('No file provided.');
     }

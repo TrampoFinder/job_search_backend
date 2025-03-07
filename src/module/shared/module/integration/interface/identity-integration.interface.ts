@@ -4,11 +4,11 @@ export interface IdentityAuthenticateApi {
   ): Promise<{ id: string; role: string }>;
   hasPermission(
     userAuthenticated: { id: string; role: string },
-    token: string | undefined,
+    userId?: string | undefined,
   ): Promise<boolean>;
   hasAdminPermission(
     userAuthenticated: { id: string; role: string },
-    token: string | undefined,
+    userId?: string | undefined,
   ): Promise<boolean>;
 }
 
