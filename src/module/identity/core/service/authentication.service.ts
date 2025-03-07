@@ -30,7 +30,8 @@ export class AuthService {
   };
 
   validateToken = async (token: string | undefined) => {
-    if (!token) throw new UnauthorizedException('No token provided');
+    if (token == undefined)
+      throw new UnauthorizedException('No token provided');
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('secret').key,

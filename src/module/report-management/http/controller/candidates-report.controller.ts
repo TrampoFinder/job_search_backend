@@ -235,10 +235,7 @@ export class CandidatesReportController {
     const token = req.headers.authorization?.split(' ')[1];
     const autheticatedUser =
       await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasAdminPermission(
-      autheticatedUser,
-      token,
-    );
+    await this.identityAuthenticateApi.hasAdminPermission(autheticatedUser);
     const jobApplications = await this.jobApplicationApi.getJobApplications(
       page,
       pageSize,
