@@ -82,8 +82,8 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
   getJobApplications = async (
     page: number = 1,
     pageSize: number = 20,
-  ): Promise<
-    {
+  ): Promise<{
+    jobApplications: {
       userId: string;
       fullName: string;
       totalApplications: number;
@@ -96,16 +96,22 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
         CLOSED: number;
         NOT_PROCESSING: number;
       };
-    }[]
-  > => {
+    }[];
+    total: number;
+  }> => {
     try {
-      const skip = (page - 1) * pageSize;
+      const totalUsersWithApplicationJobs = await this.model.groupBy({
+        by: ['userId'],
+        _count: {
+          _all: true,
+        },
+      });
       const groupedApplications = await this.model.groupBy({
         by: ['userId'],
         _count: {
           id: true,
         },
-        skip,
+        skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: {
           userId: 'desc',
@@ -158,7 +164,10 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
           };
         }),
       );
-      return jobApplications;
+      return {
+        jobApplications,
+        total: totalUsersWithApplicationJobs.length,
+      };
     } catch (error) {
       this.handleAndThrowError(error);
     }

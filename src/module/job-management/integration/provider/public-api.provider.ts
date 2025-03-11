@@ -7,7 +7,7 @@ export class JobApplicationPublicApiProvider implements JobApplicationApi {
   constructor(
     private readonly jobApplicationManagementService: JobApplicationManagementService,
   ) {}
-  async getJobApplications(page?: number, pageSize?: number) {
+  async getJobApplications(page: number, pageSize: number) {
     try {
       return this.jobApplicationManagementService.getJobApplications(
         page,
