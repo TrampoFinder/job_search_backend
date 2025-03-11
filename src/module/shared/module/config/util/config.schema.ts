@@ -17,6 +17,7 @@ export const secretKeySchema = z.object({
 
 export const configSchema = z.object({
   env: environmentSchema,
+  database: databaseSchema,
   port: z.coerce.number().positive().int(),
   secret: secretKeySchema,
 });

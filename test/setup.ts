@@ -11,7 +11,7 @@ if (!fs.existsSync(envFile)) {
 // Ensure a test environment variable file exists because of the override config
 // loading mechanics below.
 if (!fs.existsSync(testEnvFile)) {
-  throw new Error('.env.test file found');
+  throw new Error('.env.test file not found');
 }
 
 // We don't want to have two dotenv files that are exactly the same, so we
