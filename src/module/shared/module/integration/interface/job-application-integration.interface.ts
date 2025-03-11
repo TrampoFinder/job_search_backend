@@ -1,9 +1,9 @@
 export interface JobApplicationApi {
   getJobApplications(
-    page?: number,
-    pageSize?: number,
-  ): Promise<
-    {
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    data: {
       userId: string;
       fullName: string;
       totalApplications: number;
@@ -16,8 +16,12 @@ export interface JobApplicationApi {
         CLOSED: number;
         NOT_PROCESSING: number;
       };
-    }[]
-  >;
+    }[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }>;
 }
 
 export const JobApplicationApi = Symbol('JobApplicationApi');

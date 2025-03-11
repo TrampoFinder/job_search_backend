@@ -177,12 +177,15 @@ describe('JobController (e2e)', () => {
             location: item.location,
           })),
         ).toEqual(
-          data.slice(0, 10).map((item) => ({
-            title: item.title,
-            company: item.company,
-            url: item.url,
-            location: item.location,
-          })),
+          data
+            .sort()
+            .slice(0, 10)
+            .map((item) => ({
+              title: item.title,
+              company: item.company,
+              url: item.url,
+              location: item.location,
+            })),
         );
       });
   });

@@ -49,6 +49,7 @@ export class AuthService {
       throw new UnauthorizedException('Authentication failed');
     }
   };
+
   private comparePassword(
     password: string,
     actualPassword: string,

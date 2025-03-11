@@ -76,10 +76,10 @@ export class JobApplicationManagementService {
   };
 
   getJobApplications = async (
-    page?: number,
-    pageSize?: number,
-  ): Promise<
-    {
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    data: {
       userId: string;
       fullName: string;
       totalApplications: number;
@@ -92,11 +92,23 @@ export class JobApplicationManagementService {
         CLOSED: number;
         NOT_PROCESSING: number;
       };
-    }[]
-  > => {
-    return await this.jobApplicationRepository.getJobApplications(
-      page,
-      pageSize,
-    );
+    }[];
+    total: number;
+    totalPages: number;
+    previousPage: number | null;
+    nextPage: number | null;
+  }> => {
+    const getJobApplications =
+      await this.jobApplicationRepository.getJobApplications(page, pageSize);
+    const totalPages = Math.ceil(getJobApplications.total / pageSize);
+    const previousPage = page > 1 ? page - 1 : null;
+    const nextPage = page < totalPages ? page + 1 : null;
+    return {
+      data: getJobApplications.jobApplications,
+      total: getJobApplications.total,
+      totalPages,
+      previousPage,
+      nextPage,
+    };
   };
 }

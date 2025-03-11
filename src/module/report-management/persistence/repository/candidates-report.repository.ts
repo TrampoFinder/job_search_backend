@@ -65,6 +65,32 @@ export class CandidatesReportRepository extends DefaultPrismaRepository {
       this.handleAndThrowError(error);
     }
   };
+
+  getAverageReportByUserId = async (
+    userId: string,
+  ): Promise<CandidateStatistic | undefined> => {
+    try {
+      if (!userId) return;
+      const average = await this.model.findFirst({
+        where: { userId },
+      });
+      if (!average) {
+        return;
+      }
+      return {
+        userId: average.userId,
+        fullName: average.fullName!,
+        notProcessing: (average.notProcessing.toNumber() * 100).toFixed(2),
+        applied: (average.applied.toNumber() * 100).toFixed(2),
+        inProgress: (average.inProgress.toNumber() * 100).toFixed(2),
+        approved: (average.approved.toNumber() * 100).toFixed(2),
+        rejected: (average.rejected.toNumber() * 100).toFixed(2),
+        closed: (average.closed.toNumber() * 100).toFixed(2),
+      };
+    } catch (error) {
+      this.handleAndThrowError(error);
+    }
+  };
   clear = async (): Promise<{ count: number }> => {
     try {
       await this.prismaService.$queryRaw`TRUNCATE TABLE tb_users CASCADE;`;

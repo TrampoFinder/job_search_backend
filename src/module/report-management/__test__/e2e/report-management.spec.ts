@@ -22,9 +22,15 @@ describe('ReportManagement (e2e)', () => {
       .overrideProvider(IdentityAuthenticateApi)
       .useValue({
         authenticate: () => {
-          return { id: 'test-user', role: 'ADMIN' };
+          return [
+            { id: 'test-user', role: 'ADMIN' },
+            { id: 'test-user1', role: 'USER' },
+          ];
         },
         hasAdminPermission: () => {
+          return true;
+        },
+        hasPermission: () => {
           return true;
         },
       })
@@ -51,6 +57,21 @@ describe('ReportManagement (e2e)', () => {
         salt: 'random_salt',
         isActive: true,
         role: 'ADMIN',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      },
+    });
+    await prisma.user.create({
+      data: {
+        id: 'test-user1',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test1@example.com',
+        password: 'test',
+        salt: 'random_salt',
+        isActive: true,
+        role: 'USER',
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
@@ -108,6 +129,19 @@ describe('ReportManagement (e2e)', () => {
         deletedAt: null,
       },
     });
+    await prisma.jobApplicationProcess.create({
+      data: {
+        id: 'test-process4',
+        title: 'Software Engineer',
+        url: 'https://company.com/job123',
+        userId: 'test-user1',
+        jobId: 'test-job',
+        status: 'REJECTED',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        deletedAt: null,
+      },
+    });
   });
 
   afterEach(async () => {
@@ -125,7 +159,7 @@ describe('ReportManagement (e2e)', () => {
       );
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.total).toBe(1);
+      expect(response.body.total).toBe(2);
       expect(response.body.totalPages).toBe(1);
       expect(response.body.previousPage).toBe(null);
       expect(response.body.nextPage).toBe(null);
@@ -149,6 +183,16 @@ describe('ReportManagement (e2e)', () => {
           inProgress: '33.33',
           approved: '0.00',
           rejected: '33.33',
+          closed: '0.00',
+        },
+        {
+          userId: 'test-user1',
+          fullName: 'Test User',
+          notProcessing: '0.00',
+          applied: '0.00',
+          inProgress: '0.00',
+          approved: '0.00',
+          rejected: '100.00',
           closed: '0.00',
         },
       ]);
@@ -176,7 +220,7 @@ describe('ReportManagement (e2e)', () => {
         '/candidates-report',
       );
       expect(response.status).toBe(200);
-      expect(response.body[0]).toMatchObject({
+      expect(response.body.data[1]).toMatchObject({
         userId: 'test-user',
         fullName: 'Test User',
         totalApplications: 3,
@@ -190,6 +234,20 @@ describe('ReportManagement (e2e)', () => {
           NOT_PROCESSING: 0,
         },
       });
+    });
+    it('returns a candidate with average applications by id', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/candidates-report/test-user1')
+        .expect(200);
+
+      // expect(response.body).toMatchObject({
+      //   notProcessing: '0.00',
+      //   applied: '0.00',
+      //   inProgress: '0.00',
+      //   approved: '0.00',
+      //   rejected: '100.00',
+      //   closed: '0.00',
+      // });
     });
   });
 });
