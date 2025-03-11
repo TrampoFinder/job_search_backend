@@ -15,10 +15,7 @@ export class UserManagementService {
   createUser = async (data: CreateUserRequestDto): Promise<UserModel> => {
     const emailExists = await this.userRepository.findByEmail(data.email);
     if (emailExists) throw new EmailAlreadyExists('Email already in use!');
-    const password = crypto
-      .pbkdf2Sync(data.password, PASSWORD_HASH_SALT, 100000, 64, 'sha512')
-      .toString('hex');
-
+    const password = this.hashPassword(data.password);
     const newUser = UserModel.create({
       ...data,
       password,
@@ -43,12 +40,25 @@ export class UserManagementService {
     if (!user) throw new NotFoundException('User not found!');
     const emailExists = await this.userRepository.findByEmail(data.email);
     if (emailExists) throw new EmailAlreadyExists('Email already in use!');
-    return await this.userRepository.update(userId, data);
+    const password = this.hashPassword(data.password);
+    return await this.userRepository.update(userId, {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password,
+      salt: PASSWORD_HASH_SALT,
+    });
   };
 
   deleteUser = async (userId: string): Promise<void> => {
     const user = await this.userRepository.findByOne({ id: userId });
     if (!user) throw new NotFoundException('User not found!');
     await this.userRepository.delete(userId);
+  };
+
+  private hashPassword = (password: string) => {
+    return crypto
+      .pbkdf2Sync(password, PASSWORD_HASH_SALT, 100000, 64, 'sha512')
+      .toString('hex');
   };
 }

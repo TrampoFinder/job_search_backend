@@ -23,24 +23,20 @@ export class IdentityPublicApiProvider implements IdentityAuthenticateApi {
     if (
       userAuthenticated.role === 'USER' &&
       userId &&
-      userAuthenticated.id === userId
+      userAuthenticated.id !== userId
     ) {
       throw new UnauthorizedException('You do not have permission.');
     }
 
     return true;
   }
-  async hasAdminPermission(
-    userAuthenticated: { id: string; role: string },
-    // userId?: string,
-  ): Promise<boolean> {
+  async hasAdminPermission(userAuthenticated: {
+    id: string;
+    role: string;
+  }): Promise<boolean> {
     if (userAuthenticated.role !== 'ADMIN') {
       throw new UnauthorizedException('Admin access required.');
     }
-    // if (userAuthenticated.id !== userId) {
-    //   throw new UnauthorizedException('You do not have permission.');
-    // }
-
     return true;
   }
 }
