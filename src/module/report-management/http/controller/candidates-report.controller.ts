@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  Param,
   Query,
   Req,
   Res,
@@ -54,10 +55,7 @@ export class CandidatesReportController {
     const token = req.headers.authorization?.split(' ')[1];
     const autheticatedUser =
       await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasAdminPermission(
-      autheticatedUser,
-      token,
-    );
+    await this.identityAuthenticateApi.hasAdminPermission(autheticatedUser);
     const pageNumber = parseInt(page) || 1;
     const pageSizeNumber = parseInt(pageSize) || 10;
     return await this.candidatesReportService.getReportPaginate(
@@ -229,17 +227,40 @@ export class CandidatesReportController {
   @UseInterceptors(new RestResponseInterceptor(CandidatesReportDto))
   async getJobApplicationsReport(
     @Req() req: AuthenticatedRequest,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
-  ): Promise<CandidatesReportDto[]> {
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+  ): Promise<CandidatesReportDto> {
+    const pageNumber = parseInt(page) || 1;
+    const pageSizeNumber = parseInt(pageSize) || 20;
     const token = req.headers.authorization?.split(' ')[1];
     const autheticatedUser =
       await this.identityAuthenticateApi.authenticate(token);
     await this.identityAuthenticateApi.hasAdminPermission(autheticatedUser);
     const jobApplications = await this.jobApplicationApi.getJobApplications(
-      page,
-      pageSize,
+      pageNumber,
+      pageSizeNumber,
     );
     return jobApplications;
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(new RestResponseInterceptor(CandidatesStatisticList))
+  async getCandidateReportById(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<CandidatesStatisticList> {
+    const token = req.headers.authorization?.split(' ')[1];
+    const autheticatedUser =
+      await this.identityAuthenticateApi.authenticate(token);
+    await this.identityAuthenticateApi.hasPermission(autheticatedUser, id);
+    const candidateReport =
+      await this.candidatesReportService.getReportByUserId(id);
+    if (!candidateReport) {
+      throw new CandidatesReportNotFoundException(
+        'Report not found for the given candidate',
+      );
+    }
+    return candidateReport;
   }
 }

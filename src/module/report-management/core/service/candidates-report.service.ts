@@ -47,4 +47,23 @@ export class CandidatesReportService {
     }
     return candidateReport;
   };
+  getReportByUserId = async (userId: string): Promise<CandidateStatistic> => {
+    const candidateReport =
+      await this.candidatesReportRepository.getAverageReportByUserId(userId);
+    if (!candidateReport) {
+      throw new CandidatesReportNotFoundException(
+        'No candidates  report found!',
+      );
+    }
+    return {
+      userId: candidateReport.userId,
+      fullName: candidateReport.fullName,
+      notProcessing: candidateReport.notProcessing,
+      applied: candidateReport.applied,
+      inProgress: candidateReport.inProgress,
+      approved: candidateReport.approved,
+      rejected: candidateReport.rejected,
+      closed: candidateReport.closed,
+    };
+  };
 }

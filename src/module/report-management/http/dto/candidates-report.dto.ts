@@ -1,7 +1,8 @@
+import { DefaultPaginationDto } from '@sharedModule/integration/http/rest/controller/dto/default-pagination.dto';
 import { Expose, Type } from 'class-transformer';
 import { IsNumber, IsString, ValidateNested } from 'class-validator';
 
-class JobApplicationStatusDto {
+export class JobApplicationStatusDto {
   @Expose()
   @IsNumber()
   IN_PROGRESS: number;
@@ -22,7 +23,7 @@ class JobApplicationStatusDto {
   NOT_PROCESSING: number;
 }
 
-export class CandidatesReportDto {
+class CandidateReportDto {
   @Expose()
   @IsString()
   userId: string;
@@ -39,4 +40,9 @@ export class CandidatesReportDto {
   @ValidateNested()
   @Type(() => JobApplicationStatusDto)
   statusCount: JobApplicationStatusDto;
+}
+
+export class CandidatesReportDto extends DefaultPaginationDto {
+  @Expose()
+  data: CandidateReportDto[];
 }

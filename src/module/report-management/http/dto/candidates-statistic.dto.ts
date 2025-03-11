@@ -1,53 +1,35 @@
+import { DefaultPaginationDto } from '@sharedModule/integration/http/rest/controller/dto/default-pagination.dto';
 import { Expose } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CandidatesStatisticList {
-  @IsUUID(4)
+  @IsString()
   @Expose()
   userId: string;
   @IsString()
   @Expose()
   fullName: string;
-  @IsNumber()
+  @IsString()
   @Expose()
   notProcessing: string;
-  @IsNumber()
+  @IsString()
   @Expose()
   applied: string;
-  @IsNumber()
+  @IsString()
   @Expose()
   inProgress: string;
-  @IsNumber()
+  @IsString()
   @Expose()
   approved: string;
-  @IsNumber()
+  @IsString()
   @Expose()
   rejected: string;
-  @IsNumber()
+  @IsString()
   @Expose()
   closed: string;
 }
 
-export class CandidatesStatisticDto {
+export class CandidatesStatisticDto extends DefaultPaginationDto {
   @Expose()
   data: CandidatesStatisticList[];
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  total?: number;
-
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  totalPages?: number;
-
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  previousPage?: number | null;
-
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  nextPage?: number | null;
 }
