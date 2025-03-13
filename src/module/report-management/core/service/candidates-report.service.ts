@@ -50,6 +50,7 @@ export class CandidatesReportService {
   getReportByUserId = async (userId: string): Promise<CandidateStatistic> => {
     const candidateReport =
       await this.candidatesReportRepository.getAverageReportByUserId(userId);
+
     if (!candidateReport) {
       throw new CandidatesReportNotFoundException(
         'No candidates  report found!',

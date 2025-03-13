@@ -11,18 +11,29 @@ import { JobController } from '@jobManagementModule/http/controller/job.controll
 import { IdentityPublicApiProvider } from '../identity/integration/provider/public-api.provider';
 import { IdentityModule } from '../identity/identity.module';
 import { JobApplicationPublicApiProvider } from './integration/provider/public-api.provider';
+import { APP_FILTER } from '@nestjs/core';
+import { DomainExceptionFilter } from '@sharedModule/integration/http/filter/domain-exception.filter';
+import FavoriteJobRepository from './persistence/repository/favorite-job.repository';
+import { FavoriteJobController } from './http/controller/favorite-job.controller';
+import FavoriteJobService from './core/service/favorite-job.service';
 @Module({
   imports: [ConfigModule.forRoot(), PrismaModule, IdentityModule],
-  controllers: [JobController, JobApplicationController],
+  controllers: [JobController, JobApplicationController, FavoriteJobController],
   providers: [
     JobManagementService,
     JobApplicationManagementService,
     JobRepository,
     JobApplicationRepository,
     JobApplicationPublicApiProvider,
+    FavoriteJobService,
+    FavoriteJobRepository,
     {
       provide: IdentityAuthenticateApi,
       useExisting: IdentityPublicApiProvider,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: DomainExceptionFilter,
     },
   ],
   exports: [JobApplicationPublicApiProvider],

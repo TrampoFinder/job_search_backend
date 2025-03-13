@@ -28,7 +28,7 @@ export class JobApplicationController {
   constructor(
     @Inject(IdentityAuthenticateApi)
     private readonly identityAuthenticateApi: IdentityAuthenticateApi,
-    private readonly jobApplicationManagementSerivce: JobApplicationManagementService,
+    private readonly jobApplicationManagementService: JobApplicationManagementService,
   ) {}
   @Post('apply/:id')
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -43,7 +43,7 @@ export class JobApplicationController {
       const token = req.headers.authorization?.split(' ')[1];
       const authenticatedUser =
         await this.identityAuthenticateApi.authenticate(token);
-      const applyJob = await this.jobApplicationManagementSerivce.applyForJob(
+      const applyJob = await this.jobApplicationManagementService.applyForJob(
         id,
         authenticatedUser.id,
         data,
@@ -61,10 +61,9 @@ export class JobApplicationController {
       throw error;
     }
   }
-  @Get(':userId/history')
+  @Get('history')
   @HttpCode(HttpStatus.OK)
   async getAllApplicationJobsByUserId(
-    @Param('userId') userId: string,
     @Req() req: AuthenticatedRequest,
     @Query('page') page: string,
     @Query('pageSize') pageSize: string,
@@ -80,10 +79,10 @@ export class JobApplicationController {
     const pageSizeNumber = parseInt(pageSize) || 10;
     const userAuthenticated =
       await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasPermission(userAuthenticated, userId);
+    // await this.identityAuthenticateApi.hasPermission(userAuthenticated);
     const jobApplications =
-      await this.jobApplicationManagementSerivce.getAllApplicationJobsByUserId(
-        userId,
+      await this.jobApplicationManagementService.getAllApplicationJobsByUserId(
+        userAuthenticated.id,
         pageNumber,
         pageSizeNumber,
       );
@@ -110,7 +109,7 @@ export class JobApplicationController {
         userId,
       );
       const updatedJobApplication =
-        await this.jobApplicationManagementSerivce.updateJobApplication(
+        await this.jobApplicationManagementService.updateJobApplication(
           jobId,
           data,
         );

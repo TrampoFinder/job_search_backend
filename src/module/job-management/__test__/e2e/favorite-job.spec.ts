@@ -1,7 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobManagementModule } from '@jobManagementModule/job-management.module';
-import { JobRepository } from '@jobManagementModule/persistence/repository/job.repository';
 import request from 'supertest';
 import FavoriteJobRepository from '@jobManagementModule/persistence/repository/favorite-job.repository';
 import { testDbClient } from '@testInfra/knex.database';
@@ -16,7 +15,6 @@ describe('JobController (e2e)', () => {
   let app: INestApplication;
   let favoriteJobRepository: FavoriteJobRepository;
   let favoriteJobService: FavoriteJobService;
-  let jobRepository: JobRepository;
   let user: any;
   let job: any;
   let token: any;
@@ -32,7 +30,6 @@ describe('JobController (e2e)', () => {
       FavoriteJobRepository,
     );
     favoriteJobService = module.get<FavoriteJobService>(FavoriteJobService);
-    jobRepository = module.get<JobRepository>(JobRepository);
   });
 
   beforeEach(async () => {
@@ -48,7 +45,6 @@ describe('JobController (e2e)', () => {
   afterEach(async () => {
     await testDbClient(Tables.job_management_tb_jobs).del();
     await testDbClient(Tables.identity_tb_users).del();
-    await jobRepository.clear();
     await favoriteJobRepository.clear();
   });
 

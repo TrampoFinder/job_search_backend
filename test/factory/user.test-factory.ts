@@ -3,15 +3,15 @@ import { UserModel } from '@identityModule/core/model/user.model';
 import * as Factory from 'factory.ts';
 
 export const userFactory = Factory.Sync.makeFactory<UserModel>({
-  id: faker.string.uuid(),
-  firstName: faker.string.sample(),
-  lastName: faker.string.sample(),
-  email: faker.internet.email(),
-  salt: faker.string.sample(),
-  isActive: faker.datatype.boolean(),
+  id: Factory.each(() => faker.string.uuid()),
+  firstName: Factory.each(() => faker.string.sample()),
+  lastName: Factory.each(() => faker.string.sample()),
+  email: Factory.each(() => faker.internet.email()),
+  salt: Factory.each(() => faker.string.sample()),
+  isActive: Factory.each(() => faker.datatype.boolean()),
   role: 'USER',
-  createdAt: faker.date.recent(),
-  updatedAt: faker.date.recent(),
+  createdAt: Factory.each(() => faker.date.recent()),
+  updatedAt: Factory.each(() => faker.date.recent()),
   deletedAt: null,
-  password: faker.internet.password(),
+  password: Factory.each(() => faker.internet.password()),
 });

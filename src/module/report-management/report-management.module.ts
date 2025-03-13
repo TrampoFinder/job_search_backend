@@ -10,6 +10,8 @@ import { CandidatesReportRepository } from './persistence/repository/candidates-
 import { JobManagementModule } from '../job-management/job-management.module';
 import { JobApplicationPublicApiProvider } from '../job-management/integration/provider/public-api.provider';
 import { JobApplicationApi } from '../shared/module/integration/interface/job-application-integration.interface';
+import { APP_FILTER } from '@nestjs/core';
+import { DomainExceptionFilter } from '@sharedModule/integration/http/filter/domain-exception.filter';
 
 @Module({
   imports: [
@@ -29,6 +31,10 @@ import { JobApplicationApi } from '../shared/module/integration/interface/job-ap
     {
       provide: JobApplicationApi,
       useExisting: JobApplicationPublicApiProvider,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: DomainExceptionFilter,
     },
   ],
 })

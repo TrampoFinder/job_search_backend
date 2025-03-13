@@ -24,13 +24,46 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
   }> => {
     try {
       const jobApplications = await this.model.findMany({
-        where: { userId },
+        where: { userId, deletedAt: null },
+        include: {
+          job: {
+            include: {
+              FavoriteJob: {
+                where: { userId },
+              },
+            },
+          },
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          {
+            job: {
+              FavoriteJob: {
+                _count: 'desc',
+              },
+            },
+          },
+          {
+            createdAt: 'desc',
+          },
+        ],
       });
       const total = await this.model.count({ where: { userId } });
-      return { jobApplications, total };
+      const echancedJobApplications = jobApplications.map((app) => {
+        const isFavorite = (app.job?.FavoriteJob?.length ?? 0) > 0;
+        const { job, ...rest } = app;
+        const jobWithoutFavorites = job
+          ? { ...job, favorites: undefined }
+          : null;
+        return {
+          ...rest,
+          job: jobWithoutFavorites,
+          isFavorite,
+        };
+      });
+
+      return { jobApplications: echancedJobApplications, total };
     } catch (error) {
       this.handleAndThrowError(error);
     }

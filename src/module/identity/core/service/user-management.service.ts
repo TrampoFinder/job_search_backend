@@ -4,8 +4,8 @@ import { UserModel } from '@identityModule/core/model/user.model';
 import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
 import { UserRepository } from '@identityModule/persistence/repository/user.repository';
 import { CreateUserRequestDto } from '@identityModule/http/rest/dto/request/create-user-request.dto';
-import { EmailAlreadyExists } from '../exception/email-already-exists.exception';
 import { UpdateUserRequestDto } from '@identityModule/http/rest/dto/request/update-user-request.dto';
+import { AlreadyExists } from '@sharedModule/core/exception/already-exists.exception';
 
 export const PASSWORD_HASH_SALT = crypto.randomBytes(20).toString('hex');
 
@@ -14,7 +14,7 @@ export class UserManagementService {
   constructor(private readonly userRepository: UserRepository) {}
   createUser = async (data: CreateUserRequestDto): Promise<UserModel> => {
     const emailExists = await this.userRepository.findByEmail(data.email);
-    if (emailExists) throw new EmailAlreadyExists('Email already in use!');
+    if (emailExists) throw new AlreadyExists('Email already in use!');
     const password = this.hashPassword(data.password);
     const newUser = UserModel.create({
       ...data,
@@ -39,7 +39,7 @@ export class UserManagementService {
     const user = await this.userRepository.findByOne({ id: userId });
     if (!user) throw new NotFoundException('User not found!');
     const emailExists = await this.userRepository.findByEmail(data.email);
-    if (emailExists) throw new EmailAlreadyExists('Email already in use!');
+    if (emailExists) throw new AlreadyExists('Email already in use!');
     const password = this.hashPassword(data.password);
     return await this.userRepository.update(userId, {
       firstName: data.firstName,

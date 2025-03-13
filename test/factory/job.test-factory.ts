@@ -3,13 +3,13 @@ import JobModel from '@jobManagementModule/core/model/job.model';
 import * as Factory from 'factory.ts';
 
 export const jobFactory = Factory.Sync.makeFactory<JobModel>({
-  id: faker.string.uuid(),
-  title: faker.string.sample(),
-  company: faker.company.name(),
+  id: Factory.each(() => faker.string.uuid()),
+  title: Factory.each(() => faker.string.sample()),
+  company: Factory.each(() => faker.company.name()),
   status: 'ACTIVE',
-  url: faker.internet.url(),
+  url: Factory.each(() => faker.internet.url()),
   location: 'REMOTO',
-  createdAt: faker.date.past(),
-  updatedAt: faker.date.recent(),
+  createdAt: Factory.each(() => faker.date.past()),
+  updatedAt: Factory.each(() => faker.date.recent()),
   deletedAt: null,
 });

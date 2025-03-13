@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpStatus,
 } from '@nestjs/common';
+import { AlreadyExists } from '@sharedModule/core/exception/already-exists.exception';
 import { InsufficientPermissionException } from '@sharedModule/core/exception/insufficient-permission.exception';
 import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
 import { UnauthorizedException } from '@sharedModule/core/exception/unauthorized.exception';
@@ -14,6 +15,7 @@ import { Response } from 'express';
   UnauthorizedException,
   InsufficientPermissionException,
   NotFoundException,
+  AlreadyExists,
 )
 export class DomainExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost) {
@@ -32,6 +34,9 @@ export class DomainExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof NotFoundException) {
       statusCode = HttpStatus.NOT_FOUND;
+    }
+    if (exception instanceof AlreadyExists) {
+      statusCode = HttpStatus.CONFLICT;
     }
 
     response.status(statusCode).json({

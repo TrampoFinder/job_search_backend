@@ -2,131 +2,87 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobManagementModule } from '@jobManagementModule/job-management.module';
 import { JobApplicationRepository } from '@jobManagementModule/persistence/repository/job-application.repository';
-import { JobRepository } from '@jobManagementModule/persistence/repository/job.repository';
 import request from 'supertest';
-import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
-import { JobApplicationManagementService } from '@jobManagementModule/core/service/job-application-management.service';
-import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
-import { PrismaService } from '@sharedModule/prisma/prisma.service';
-import JobModel from '@jobManagementModule/core/model/job.model';
-import JobApplicationModel, {
-  JobApplicationProcessType,
-} from '@jobManagementModule/core/model/job-application.model';
-
+import { testDbClient } from '@testInfra/knex.database';
+import { Tables } from '@testInfra/enum/tables.enum';
+import { userFactory } from '@testInfra/factory/user.test-factory';
+import { jobFactory } from '@testInfra/factory/job.test-factory';
+import { signInFactory } from '@testInfra/factory/sign-in.test-factory';
+import { jobApplicationAppliedFactory } from '@testInfra/factory/job-application.test-factory';
 describe('JobApplicationController (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
-  let jobManagementService: JobManagementService;
-  let jobApplicationManagementService: JobApplicationManagementService;
   let jobApplicationRepository: JobApplicationRepository;
-  let jobRepository: JobRepository;
-  let prismaService: PrismaService;
+  let user: any;
+  let job: any;
+  let jobApplicationRejectFactory: any;
+  let token: any;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [JobManagementModule],
-    })
-      .overrideProvider(IdentityAuthenticateApi)
-      .useValue({
-        authenticate: () => {
-          return { id: '647edd99-34b9-436e-9398-bde6c93cec4d', role: 'USER' };
-        },
-        hasPermission: () => {
-          return true;
-        },
-      })
-      .compile();
+    }).compile();
 
     app = module.createNestApplication();
     await app.init();
 
-    jobApplicationManagementService =
-      module.get<JobApplicationManagementService>(
-        JobApplicationManagementService,
-      );
-    jobManagementService =
-      module.get<JobManagementService>(JobManagementService);
     jobApplicationRepository = module.get<JobApplicationRepository>(
       JobApplicationRepository,
     );
-    jobRepository = module.get<JobRepository>(JobRepository);
-    prismaService = module.get<PrismaService>(PrismaService);
-    await prismaService.user.create({
-      data: {
-        id: '647edd99-34b9-436e-9398-bde6c93cec4d',
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'testsss@example.com',
-        password: 'test',
-        salt: 'random_salt',
-        isActive: true,
-        role: 'USER',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-      },
-    });
   });
 
   beforeEach(async () => {
+    user = userFactory.build();
+    job = jobFactory.build();
+    jobApplicationRejectFactory = jobApplicationAppliedFactory.build({
+      userId: user.id,
+      jobId: job.id,
+    });
+    await testDbClient(Tables.identity_tb_users).insert(user);
+    await testDbClient(Tables.job_management_tb_jobs).insert(job);
+    await testDbClient(
+      Tables.job_management_tb_job_application_processes,
+    ).insert(jobApplicationRejectFactory);
     jest
       .useFakeTimers({ advanceTimers: true })
       .setSystemTime(new Date('2025-08-08'));
   });
 
   afterEach(async () => {
+    await testDbClient(
+      Tables.job_management_tb_job_application_processes,
+    ).del();
+    await testDbClient(Tables.job_management_tb_jobs).del();
+    await testDbClient(Tables.identity_tb_users).del();
     await jobApplicationRepository.clear();
-    await jobRepository.clear();
   });
 
   afterAll(async () => {
-    await prismaService.user.deleteMany();
+    await testDbClient.destroy();
     await module.close();
   });
 
   describe('/job-application (POST)', () => {
     it('should apply a job successfully', async () => {
-      const jobInput = {
-        title: 'Test Job',
-        company: 'Job in R. Rego Freitas',
-        url: 'https://republicarr.jobs.com.br/',
-        location: 'São Paulo, BR',
-      };
-      const jobOutput = await jobManagementService.createJob(jobInput);
-      const jobApplicationInput = {
-        title: jobInput.title,
-        url: jobInput.url,
-        status: 'APPLIED',
-      };
+      token = await signInFactory(user.email, user.password);
       const response = await request(app.getHttpServer())
-        .post(`/job-application/apply/${jobOutput.id}`)
-        .send(jobApplicationInput)
+        .post(`/job-application/apply/${job.id}`)
+        .set('Authorization', `Bearer ${token.accessToken}`)
+        .send(jobApplicationRejectFactory)
         .expect(HttpStatus.CREATED);
 
       expect(response.body).toMatchObject({
-        title: jobApplicationInput.title,
-        url: jobApplicationInput.url,
-        jobId: jobOutput.id,
+        title: jobApplicationRejectFactory.title,
+        url: jobApplicationRejectFactory.url,
+        jobId: job.id,
       });
     });
     it('should not allow invalid jobId', async () => {
-      const jobInput = {
-        title: 'Test Job',
-        company: 'Job in R. Rego Freitas',
-        url: 'https://republicarr.jobs.com.br/',
-        location: 'São Paulo, BR',
-      };
-      await jobManagementService.createJob(jobInput);
-      const jobApplicationInput = {
-        title: jobInput.title,
-        url: jobInput.url,
-        userId: 'test',
-        status: 'APPLIED',
-      };
-
+      token = await signInFactory(user.email, user.password);
       await request(app.getHttpServer())
-        .post(`/job-application/apply/${'jobOutput'}`)
-        .send(jobApplicationInput)
+        .post('/job-application/apply/test')
+        .set('Authorization', `Bearer ${token.accessToken}`)
+        .send(jobApplicationRejectFactory)
         .expect(HttpStatus.NOT_FOUND)
         .expect({
           message: 'Job not found',
@@ -137,104 +93,54 @@ describe('JobApplicationController (e2e)', () => {
   });
   describe('JobApplication (GET)', () => {
     it('should retrieve applied jobs list', async () => {
-      const dataJobs: JobModel[] = [];
-      let count = 0;
-      for (let i = 0; i < 15; i++) {
-        const jobInput = {
-          title: `Test Job${count}`,
-          company: 'Job in R. Rego Freitas',
-          url: 'https://republicarr.jobs.com.br/',
-          location: 'São Paulo, BR',
-        };
-        count++;
-        dataJobs.push(await jobManagementService.createJob(jobInput));
-      }
-      const jobApplication: JobApplicationModel[] = [];
-      for (let i = 0; i < 15; i++) {
-        const jobApplicationInput = {
-          title: dataJobs[i].title,
-          url: dataJobs[i].url,
-          status: JobApplicationProcessType.APPLIED,
-          note: null,
-        };
-        const test = await jobApplicationManagementService.applyForJob(
-          dataJobs.sort()[i].id,
-          '647edd99-34b9-436e-9398-bde6c93cec4d',
-          jobApplicationInput,
-        );
+      token = await signInFactory(user.email, user.password);
+      const jobApplicationFactory = jobApplicationAppliedFactory.buildList(14, {
+        userId: user.id,
+        jobId: job.id,
+      });
 
-        jobApplication.push(test);
-      }
+      await testDbClient(Tables.job_management_tb_job_application_processes)
+        .insert(jobApplicationFactory)
+        .where({ userId: user.id })
+        .orderBy('createdAt', 'desc')
+        .limit(10);
       const response = await request(app.getHttpServer())
-        .get('/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/history')
+        .get(`/job-application/history`)
+        .set('Authorization', `Bearer ${token.accessToken}`)
         .expect(HttpStatus.OK);
       expect(response.body.total).toBe(15);
       expect(response.body.totalPages).toBe(2);
       expect(response.body.previousPage).toBe(null);
       expect(response.body.nextPage).toBe(2);
-      console.log(response.body.data);
+      expect(response.body.data.length).toBeLessThanOrEqual(10);
     });
   });
   describe('JobApplication (PUT)', () => {
     it('should update job application status', async () => {
-      const jobInput = {
-        title: 'Test Job',
-        company: 'Job in R. Rego Freitas',
-        url: 'https://republicarr.jobs.com.br/',
-        location: 'São Paulo, BR',
-      };
-      const jobOutput = await jobManagementService.createJob(jobInput);
-      const jobApplicationOutput =
-        await jobApplicationManagementService.applyForJob(
-          jobOutput.id,
-          '647edd99-34b9-436e-9398-bde6c93cec4d',
-          {
-            title: jobInput.title,
-            url: jobInput.url,
-            status: 'APPLIED',
-            note: null,
-          },
-        );
+      token = await signInFactory(user.email, user.password);
       const updatedApplicationStatus = {
         status: 'IN_PROGRESS',
         note: 'WAIT RESPONSE',
       };
       const response = await request(app.getHttpServer())
         .put(
-          `/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/${jobApplicationOutput.id}/update`,
+          `/job-application/${user.id}/${jobApplicationRejectFactory.id}/update`,
         )
+        .set('Authorization', `Bearer ${token.accessToken}`)
         .send(updatedApplicationStatus)
         .expect(HttpStatus.OK);
       expect(response.body.status).toBe(updatedApplicationStatus.status);
       expect(response.body.note).toBe(updatedApplicationStatus.note);
     });
     it('should update job application with invalid params', async () => {
-      const jobInput = {
-        title: 'Test Job',
-        company: 'Job in R. Rego Freitas',
-        url: 'https://republicarr.jobs.com.br/',
-        location: 'São Paulo, BR',
-      };
-      const jobOutput = await jobManagementService.createJob(jobInput);
-
-      await jobApplicationManagementService.applyForJob(
-        jobOutput.id,
-        '647edd99-34b9-436e-9398-bde6c93cec4d',
-        {
-          title: jobInput.title,
-          url: jobInput.url,
-          status: 'APPLIED',
-          note: null,
-        },
-      );
+      token = await signInFactory(user.email, user.password);
       const updatedApplicationStatus = {
         status: 'IN_PROGRESS',
         note: 'WAIT RESPONSE',
       };
       const response = await request(app.getHttpServer())
-        .put(
-          `/job-application/647edd99-34b9-436e-9398-bde6c93cec4d/test/update`,
-        )
+        .put(`/job-application/${user.id}/test/update`)
+        .set('Authorization', `Bearer ${token.accessToken}`)
         .send(updatedApplicationStatus)
         .expect(HttpStatus.NOT_FOUND);
       expect(response.body).toMatchObject({
