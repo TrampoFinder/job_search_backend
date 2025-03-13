@@ -1,11 +1,12 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["views"]
+  previewFeatures = ["views", "multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["identity", "job_management", "report_management"]
 }
 
 model Job {
@@ -19,8 +20,10 @@ model Job {
   updatedAt             DateTime
   deletedAt             DateTime?
   JobApplicationProcess JobApplicationProcess[]
+  FavoriteJob           FavoriteJob[]
 
   @@map("tb_jobs")
+  @@schema("job_management")
 }
 
 model User {
@@ -36,8 +39,10 @@ model User {
   role                  RoleUser
   deletedAt             DateTime?
   JobApplicationProcess JobApplicationProcess[]
+  FavoriteJob           FavoriteJob[]
 
   @@map("tb_users")
+  @@schema("identity")
 }
 
 model JobApplicationProcess {
@@ -45,6 +50,7 @@ model JobApplicationProcess {
   title     String
   url       String
   jobId     String
+  company   String
   userId    String
   note      String?
   createdAt DateTime
@@ -55,6 +61,22 @@ model JobApplicationProcess {
   job       Job?                         @relation(fields: [jobId], references: [id], onDelete: NoAction)
 
   @@map("tb_job_application_processes")
+  @@schema("job_management")
+}
+
+model FavoriteJob {
+  id        String    @id
+  userId    String
+  jobId     String
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@map("tb_favorite_jobs")
+  @@schema("job_management")
 }
 
 view UserJobApplicationAvg {
@@ -68,6 +90,7 @@ view UserJobApplicationAvg {
   closed        Decimal @db.Decimal
 
   @@map("tb_user_job_application_avg")
+  @@schema("report_management")
 }
 
 enum JobStatus {
@@ -75,6 +98,7 @@ enum JobStatus {
   INACTIVE
 
   @@map("status")
+  @@schema("job_management")
 }
 
 enum RoleUser {
@@ -82,6 +106,7 @@ enum RoleUser {
   USER
 
   @@map("role_user")
+  @@schema("identity")
 }
 
 enum JobApplicationProcessStatus {
@@ -93,4 +118,5 @@ enum JobApplicationProcessStatus {
   CLOSED
 
   @@map("status_job_application_processes")
+  @@schema("job_management")
 }
