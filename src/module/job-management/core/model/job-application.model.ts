@@ -26,6 +26,7 @@ export default class JobApplicationModel {
   url: string;
   userId: string;
   jobId: string;
+  company: string;
   status: JobApplicationProcessType | null;
   note: string | null;
   createdAt: Date;
@@ -49,6 +50,7 @@ export default class JobApplicationModel {
       url: data.url,
       userId: data.userId,
       jobId: data.jobId,
+      company: data.company,
       status: data.status ?? null,
       note: data.note ?? null,
       createdAt: new Date(),

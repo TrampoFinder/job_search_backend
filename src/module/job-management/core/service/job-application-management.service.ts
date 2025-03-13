@@ -21,10 +21,12 @@ export class JobApplicationManagementService {
     if (!job) {
       throw new JobNotFoundException('Job not found');
     }
+    const { id, company } = job;
     const newApplicationJob = JobApplicationModel.create({
       ...data,
       userId: userId,
-      jobId: jobId,
+      jobId: id,
+      company: company,
     });
     return await this.jobApplicationRepository.save(newApplicationJob);
   };

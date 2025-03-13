@@ -16,7 +16,7 @@ import {
 import { CreateUserRequestDto } from '../dto/request/create-user-request.dto';
 import { UserManagementService } from '@identityModule/core/service/user-management.service';
 import { AuthGuard } from '@identityModule/http/rest/guard/auth.guard';
-import { EmailAlreadyExists } from '@identityModule/core/exception/email-already-exists.exception';
+import { AlreadyExists } from '@sharedModule/core/exception/already-exists.exception';
 import { Response } from 'express';
 import { UpdateUserRequestDto } from '../dto/request/update-user-request.dto';
 import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
@@ -51,7 +51,7 @@ export class UserController {
         },
       });
     } catch (error) {
-      if (error instanceof EmailAlreadyExists) {
+      if (error instanceof AlreadyExists) {
         return res.status(HttpStatus.CONFLICT).send({
           message: error.message,
           statusCode: HttpStatus.CONFLICT,
@@ -107,7 +107,7 @@ export class UserController {
       await this.userManagementService.updateUser(userId, data);
       return res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      if (error instanceof EmailAlreadyExists) {
+      if (error instanceof AlreadyExists) {
         return res.status(HttpStatus.CONFLICT).send({
           message: error.message,
           statusCode: HttpStatus.CONFLICT,
