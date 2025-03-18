@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CandidatesReportNotFoundException } from '@reportManagementModule/core/exception/candidates-report-not-found.exception';
 import { CandidatesReportRepository } from '@reportManagementModule/persistence/repository/candidates-report.repository';
 import { CandidateStatistic } from '@reportManagementModule/core/model/candidates-statistic.model';
+import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
 
 @Injectable()
 export class CandidatesReportService {
@@ -22,9 +22,7 @@ export class CandidatesReportService {
         pageSize,
       );
     if (!candidateReport) {
-      throw new CandidatesReportNotFoundException(
-        'No candidates  report found!',
-      );
+      throw new NotFoundException('No candidates  report found!');
     }
     const totalPages = Math.ceil(candidateReport.total / pageSize);
     const previousPage = page > 1 ? page - 1 : null;
@@ -41,9 +39,7 @@ export class CandidatesReportService {
     const candidateReport =
       await this.candidatesReportRepository.getAverageReport();
     if (!candidateReport) {
-      throw new CandidatesReportNotFoundException(
-        'No candidates  report found!',
-      );
+      throw new NotFoundException('No candidates  report found!');
     }
     return candidateReport;
   };
@@ -52,9 +48,7 @@ export class CandidatesReportService {
       await this.candidatesReportRepository.getAverageReportByUserId(userId);
 
     if (!candidateReport) {
-      throw new CandidatesReportNotFoundException(
-        'No candidates  report found!',
-      );
+      throw new NotFoundException('No candidates  report found!');
     }
     return {
       userId: candidateReport.userId,
