@@ -28,6 +28,7 @@ import {
 } from '@reportManagementModule/http/dto/candidates-statistic.dto';
 import { JobApplicationApi } from '@sharedModule/integration/interface/job-application-integration.interface';
 import { CandidatesReportDto } from '../dto/candidates-report.dto';
+import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
 
 @Controller('candidates-report')
 export class CandidatesReportController {
@@ -257,9 +258,7 @@ export class CandidatesReportController {
     const candidateReport =
       await this.candidatesReportService.getReportByUserId(id);
     if (!candidateReport) {
-      throw new CandidatesReportNotFoundException(
-        'Report not found for the given candidate',
-      );
+      throw new NotFoundException('Report not found for the given candidate');
     }
     return candidateReport;
   }
