@@ -13,5 +13,7 @@ export const userFactory = Factory.Sync.makeFactory<UserModel>({
   createdAt: Factory.each(() => faker.date.recent()),
   updatedAt: Factory.each(() => faker.date.recent()),
   deletedAt: null,
+  recoveryCode: null,
+  recoveryCodeExpiredAt: null,
   password: Factory.each(() => faker.internet.password()),
 });

@@ -40,12 +40,14 @@ export class UserManagementService {
     if (!user) throw new NotFoundException('User not found!');
     const emailExists = await this.userRepository.findByEmail(data.email);
     if (emailExists) throw new AlreadyExists('Email already in use!');
-    const password = this.hashPassword(data.password);
+    const newPassword = data.password
+      ? this.hashPassword(data.password)
+      : user.password;
     return await this.userRepository.update(userId, {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
-      password,
+      password: newPassword,
       salt: PASSWORD_HASH_SALT,
     });
   };
