@@ -38,6 +38,8 @@ model User {
   salt                  String
   role                  RoleUser
   deletedAt             DateTime?
+  recoveryCode          String?
+  recoveryCodeExpiredAt DateTime?
   JobApplicationProcess JobApplicationProcess[]
   FavoriteJob           FavoriteJob[]
 

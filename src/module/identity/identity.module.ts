@@ -12,6 +12,7 @@ import { IdentityPublicApiProvider } from './integration/provider/public-api.pro
 import { UserRepository } from './persistence/repository/user.repository';
 import { APP_FILTER } from '@nestjs/core';
 import { DomainExceptionFilter } from '@sharedModule/integration/http/filter/domain-exception.filter';
+import { NotificationModule } from '@sharedModule/notification/notificiation.module';
 
 @Module({
   imports: [
@@ -21,10 +22,10 @@ import { DomainExceptionFilter } from '@sharedModule/integration/http/filter/dom
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get('secret').key,
-        signOptions: { expiresIn: '60m', algorithm: 'HS256' },
       }),
     }),
     PrismaModule,
+    NotificationModule,
   ],
   controllers: [AuthController, UserController],
   providers: [

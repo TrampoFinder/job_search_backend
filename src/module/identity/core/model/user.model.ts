@@ -20,6 +20,8 @@ export class UserModel {
   role: RoleUserType;
   createdAt: Date;
   updatedAt: Date;
+  recoveryCode: string | null;
+  recoveryCodeExpiredAt: Date | null;
   deletedAt: Date | null;
 
   constructor(data: UserModel) {
@@ -29,7 +31,14 @@ export class UserModel {
   static create(
     data: WithOptional<
       UserModel,
-      'id' | 'role' | 'isActive' | 'createdAt' | 'updatedAt' | 'deletedAt'
+      | 'id'
+      | 'role'
+      | 'isActive'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'deletedAt'
+      | 'recoveryCode'
+      | 'recoveryCodeExpiredAt'
     >,
     id = randomUUID(),
   ): UserModel {
@@ -40,7 +49,9 @@ export class UserModel {
       isActive: true,
       createdAt: data.createdAt ? data.createdAt : new Date(),
       updatedAt: data.updatedAt ? data.updatedAt : new Date(),
-      deletedAt: data.deletedAt ? data.deletedAt : null,
+      deletedAt: null,
+      recoveryCode: null,
+      recoveryCodeExpiredAt: null,
     });
   }
 }

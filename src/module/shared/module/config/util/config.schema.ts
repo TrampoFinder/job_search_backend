@@ -15,9 +15,20 @@ export const secretKeySchema = z.object({
   key: z.string(),
 });
 
+export const mailerSchema = z.object({
+  apiUrl: z.string(),
+  host: z.string(),
+  port: z.coerce.number().positive().int(),
+  auth: z.object({
+    user: z.string(),
+    pass: z.string(),
+  }),
+});
+
 export const configSchema = z.object({
   env: environmentSchema,
   database: databaseSchema,
   port: z.coerce.number().positive().int(),
   secret: secretKeySchema,
+  mailer: mailerSchema,
 });
