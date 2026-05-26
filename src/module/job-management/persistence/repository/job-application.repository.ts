@@ -118,7 +118,6 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
   ): Promise<{
     jobApplications: {
       userId: string;
-      fullName: string;
       totalApplications: number;
       activeProcessCount: number;
       statusCount: {
@@ -161,7 +160,6 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
               userId: app.userId,
             },
           });
-          const userDetails = await this.getUserDetails(app.userId);
           const activeProcessCount = statusCounts.reduce((sum, curr) => {
             if (
               ['IN_PROGRESS', 'APPROVED', 'APPLIED'].includes(
@@ -189,8 +187,6 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
           );
           return {
             userId: app.userId,
-            fullName:
-              userDetails?.user?.firstName + ' ' + userDetails?.user?.lastName,
             totalApplications: app._count.id,
             activeProcessCount,
             statusCount: statusCountMap,
@@ -204,22 +200,6 @@ export class JobApplicationRepository extends DefaultPrismaRepository {
     } catch (error) {
       this.handleAndThrowError(error);
     }
-  };
-
-  private getUserDetails = async (userId: string) => {
-    return this.model.findFirst({
-      where: {
-        userId,
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
   };
 
   clear = async (): Promise<{ count: number }> => {

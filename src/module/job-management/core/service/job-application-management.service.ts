@@ -83,7 +83,6 @@ export class JobApplicationManagementService {
   ): Promise<{
     data: {
       userId: string;
-      fullName: string;
       totalApplications: number;
       activeProcessCount: number;
       statusCount: {

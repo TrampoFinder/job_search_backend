@@ -82,7 +82,7 @@ model FavoriteJob {
 }
 
 view UserJobApplicationAvg {
-  userId        String  @id
+  userId        String
   fullName      String?
   notProcessing Decimal @db.Decimal
   applied       Decimal @db.Decimal
@@ -91,6 +91,7 @@ view UserJobApplicationAvg {
   rejected      Decimal @db.Decimal
   closed        Decimal @db.Decimal
 
+  @@unique([userId])
   @@map("tb_user_job_application_avg")
   @@schema("report_management")
 }

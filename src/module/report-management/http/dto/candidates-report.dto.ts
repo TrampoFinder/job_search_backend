@@ -28,9 +28,6 @@ class CandidateReportDto {
   @IsString()
   userId: string;
   @Expose()
-  @IsString()
-  fullName: string;
-  @Expose()
   @IsNumber()
   totalApplications: number;
   @Expose()
