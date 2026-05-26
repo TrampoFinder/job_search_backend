@@ -9,6 +9,8 @@ import { userFactory } from '@testInfra/factory/user.test-factory';
 import { jobFactory } from '@testInfra/factory/job.test-factory';
 import { signInFactory } from '@testInfra/factory/sign-in.test-factory';
 import { jobApplicationAppliedFactory } from '@testInfra/factory/job-application.test-factory';
+import { e2eAuthImports, e2eAuthProviders } from '@testInfra/e2e-auth.setup';
+
 describe('JobApplicationController (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
@@ -20,7 +22,8 @@ describe('JobApplicationController (e2e)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [JobManagementModule],
+      imports: [...e2eAuthImports, JobManagementModule],
+      providers: e2eAuthProviders,
     }).compile();
 
     app = module.createNestApplication();

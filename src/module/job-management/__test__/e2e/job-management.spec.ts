@@ -11,6 +11,7 @@ import { jobFactory } from '@testInfra/factory/job.test-factory';
 import { testDbClient } from '@testInfra/knex.database';
 import { Tables } from '@testInfra/enum/tables.enum';
 import { signInFactory } from '@testInfra/factory/sign-in.test-factory';
+import { e2eAuthImports, e2eAuthProviders } from '@testInfra/e2e-auth.setup';
 
 describe('JobController (e2e)', () => {
   let module: TestingModule;
@@ -21,13 +22,15 @@ describe('JobController (e2e)', () => {
   let token: any;
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [JobManagementModule],
+      imports: [...e2eAuthImports, JobManagementModule],
+      providers: e2eAuthProviders,
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
 
     jobRepository = module.get<JobRepository>(JobRepository);
+    fs.mkdirSync('./uploads', { recursive: true });
   });
 
   beforeEach(async () => {
@@ -81,8 +84,13 @@ describe('JobController (e2e)', () => {
             __dirname,
             '../../../../../test/fixtures/use_case_plan_50.xlsx',
           ),
-        )
-        .expect(HttpStatus.CREATED);
+          {
+            filename: 'use_case_plan_50.xlsx',
+            contentType:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          },
+        );
+      expect(response.status).toBe(HttpStatus.CREATED);
       expect(response.body).toHaveLength(49);
     });
     it('should reject invalid parameters', async () => {

@@ -4,38 +4,30 @@ import {
   Delete,
   Get,
   HttpStatus,
-  Inject,
   Param,
   Post,
   Query,
-  Req,
   Res,
 } from '@nestjs/common';
 import { AlreadyExists } from '@sharedModule/core/exception/already-exists.exception';
 import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
-import { AuthenticatedRequest } from '@sharedModule/integration/interface/authenticate-request.interface';
-import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import { Response } from 'express';
+import { CurrentUser } from '@sharedModule/auth/decorator/current-user.decorator';
+
 @Controller('favorites-job')
 export class FavoriteJobController {
-  constructor(
-    @Inject(IdentityAuthenticateApi)
-    private readonly identityAuthenticateApi: IdentityAuthenticateApi,
-    private readonly favoriteJobService: FavoriteJobService,
-  ) {}
+  constructor(private readonly favoriteJobService: FavoriteJobService) {}
+
   @Post(':id')
   async addFavoriteJob(
     @Param('id') jobId: string,
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: { id: string; role: string },
     @Res() res: Response,
   ): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      const authenticatedUser =
-        await this.identityAuthenticateApi.authenticate(token);
       const favoriteJob = await this.favoriteJobService.addFavoriteJob(
         jobId,
-        authenticatedUser.id,
+        user.id,
       );
       return res.status(HttpStatus.CREATED).send({
         favoriteJob,
@@ -58,21 +50,19 @@ export class FavoriteJobController {
       throw error;
     }
   }
+
   @Get()
   async getFavoriteJobs(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: { id: string; role: string },
     @Res() res: Response,
     @Query('page') page: string,
     @Query('pageSize') pageSize: string,
   ): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
       const pageNumber = parseInt(page) || 1;
       const pageSizeNumber = parseInt(pageSize) || 10;
-      const authenticatedUser =
-        await this.identityAuthenticateApi.authenticate(token);
       const favoriteJobs = await this.favoriteJobService.getFavoriteJobs(
-        authenticatedUser.id,
+        user.id,
         pageNumber,
         pageSizeNumber,
       );
@@ -90,20 +80,15 @@ export class FavoriteJobController {
       throw error;
     }
   }
+
   @Delete(':id/remove')
   async removeFavoriteJob(
     @Param('id') jobId: string,
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: { id: string; role: string },
     @Res() res: Response,
   ): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      const authenticatedUser =
-        await this.identityAuthenticateApi.authenticate(token);
-      await this.favoriteJobService.removeFavoriteJob(
-        jobId,
-        authenticatedUser.id,
-      );
+      await this.favoriteJobService.removeFavoriteJob(jobId, user.id);
       return res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
       if (error instanceof NotFoundException) {

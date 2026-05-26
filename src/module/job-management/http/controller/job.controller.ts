@@ -6,8 +6,6 @@ import {
   ValidationPipe,
   UsePipes,
   Query,
-  Req,
-  Inject,
   HttpCode,
   HttpStatus,
   UseInterceptors,
@@ -17,8 +15,6 @@ import {
 import JobModel from '@jobManagementModule/core/model/job.model';
 import { JobManagementService } from '@jobManagementModule/core/service/job-management.service';
 import { CreateJobRequestDto } from '@jobManagementModule/http/dto/request/create-job-request.dto';
-import { AuthenticatedRequest } from '@sharedModule/integration/interface/authenticate-request.interface';
-import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { RestResponseInterceptor } from '@sharedLibs/util/interceptor/rest-response.interceptor';
@@ -26,14 +22,14 @@ import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import * as ExcelJS from 'exceljs';
 import { CreateJobResponseDto } from '../dto/response/created-job-response.dto';
+import { Public } from '@sharedModule/auth/decorator/public.decorator';
+import { RequireAdmin } from '@sharedModule/auth/decorator/require-admin.decorator';
 
 @Controller('job-management')
 export class JobController {
-  constructor(
-    private readonly jobManagementService: JobManagementService,
-    @Inject(IdentityAuthenticateApi)
-    private readonly identityAuthenticateApi: IdentityAuthenticateApi,
-  ) {}
+  constructor(private readonly jobManagementService: JobManagementService) {}
+
+  @Public()
   @Get()
   async getAllJobs(
     @Query('page') page: string,
@@ -57,21 +53,17 @@ export class JobController {
       companyName,
     );
   }
+
+  @RequireAdmin()
   @Post('register')
   @UsePipes(new ValidationPipe({ transform: true }))
   async create(
     @Body() createJobRequestDto: CreateJobRequestDto,
-    // @Req() req: AuthenticatedRequest,
   ): Promise<JobModel> {
-    // const token = req.headers.authorization?.split(' ')[1];
-    // const authenticatedUser =
-    //   await this.identityAuthenticateApi.authenticate(token);
-    // await this.identityAuthenticateApi.hasAdminPermission(
-    //   authenticatedUser,
-    // );
     return await this.jobManagementService.createJob(createJobRequestDto);
   }
 
+  @Public()
   @Get('companies')
   async getJobsByCompanyCount(): Promise<{ companyCount: number }> {
     const jobsCompany = await this.jobManagementService.getJobsByCompanyCount();
@@ -80,6 +72,7 @@ export class JobController {
     };
   }
 
+  @RequireAdmin()
   @Post('uploadJobs')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
@@ -116,47 +109,36 @@ export class JobController {
   @UseInterceptors(new RestResponseInterceptor(CreateJobResponseDto))
   async uploadJobs(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: AuthenticatedRequest,
   ): Promise<CreateJobResponseDto[]> {
-    const token = req.headers.authorization?.split(' ')[1];
-    const authenticatedUser =
-      await this.identityAuthenticateApi.authenticate(token);
-    await this.identityAuthenticateApi.hasAdminPermission(authenticatedUser);
     if (!file) {
       throw new BadRequestException('No file provided.');
     }
-    try {
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.readFile(file.path);
-      const worksheet = workbook.getWorksheet(4);
-      const jobRequests: CreateJobRequestDto[] = [];
-      if (!worksheet) {
-        throw new BadRequestException('No data found in the provided file.');
-      }
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber === 1) return;
-        const urlValue = row.getCell(6).value;
-        const urlParse =
-          urlValue &&
-          typeof urlValue === 'object' &&
-          (urlValue as any).hyperlink
-            ? (urlValue as any).hyperlink
-            : '';
-        const jobRequestDto: CreateJobRequestDto = {
-          company: row.getCell(1).value?.toString() || '',
-          title: row.getCell(5).value?.toString() || '',
-          url: urlParse,
-          location: row.getCell(7).value?.toString() || '',
-        };
-        jobRequests.push(jobRequestDto);
-      });
-      return await Promise.all(
-        jobRequests.map(async (jobRequest) => {
-          return await this.jobManagementService.createJob(jobRequest);
-        }),
-      );
-    } catch (error) {
-      throw error;
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(file.path);
+    const worksheet = workbook.getWorksheet(4);
+    const jobRequests: CreateJobRequestDto[] = [];
+    if (!worksheet) {
+      throw new BadRequestException('No data found in the provided file.');
     }
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      const urlValue = row.getCell(6).value;
+      const urlParse =
+        urlValue && typeof urlValue === 'object' && (urlValue as any).hyperlink
+          ? (urlValue as any).hyperlink
+          : '';
+      const jobRequestDto: CreateJobRequestDto = {
+        company: row.getCell(1).value?.toString() || '',
+        title: row.getCell(5).value?.toString() || '',
+        url: urlParse,
+        location: row.getCell(7).value?.toString() || '',
+      };
+      jobRequests.push(jobRequestDto);
+    });
+    return await Promise.all(
+      jobRequests.map(async (jobRequest) => {
+        return await this.jobManagementService.createJob(jobRequest);
+      }),
+    );
   }
 }

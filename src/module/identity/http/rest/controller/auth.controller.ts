@@ -14,10 +14,12 @@ import { UnauthorizedException } from '@sharedModule/core/exception/unauthorized
 import { Response } from 'express';
 import { RecoveryPasswordDto } from '../dto/request/recovery-password-request.dto';
 import { ResetPasswordDto } from '../dto/request/reset-password-request.dto';
+import { Public } from '@sharedModule/auth/decorator/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  @Public()
   @Post('sign-in')
   @UsePipes(new ValidationPipe({ transform: true }))
   async signIn(
@@ -42,6 +44,7 @@ export class AuthController {
       throw error;
     }
   }
+  @Public()
   @Post('/recovery-password')
   async recoveryPassword(
     @Body() recoveryPasswordDto: RecoveryPasswordDto,
@@ -54,6 +57,7 @@ export class AuthController {
       throw error;
     }
   }
+  @Public()
   @Post('/reset-password/:token')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,

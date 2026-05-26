@@ -7,6 +7,7 @@ import request from 'supertest';
 import { AuthService } from '@identityModule/core/service/authentication.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailSenderService } from '@sharedModule/notification/service/email-sender.service';
+import { e2eAuthImports, e2eAuthProviders } from '@testInfra/e2e-auth.setup';
 
 describe('AuthController (e2e)', () => {
   let module: TestingModule;
@@ -19,7 +20,8 @@ describe('AuthController (e2e)', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [IdentityModule],
+      imports: [...e2eAuthImports, IdentityModule],
+      providers: e2eAuthProviders,
     }).compile();
 
     app = module.createNestApplication();

@@ -9,23 +9,23 @@ import {
   Patch,
   Post,
   Res,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateUserRequestDto } from '../dto/request/create-user-request.dto';
 import { UserManagementService } from '@identityModule/core/service/user-management.service';
-import { AuthGuard } from '@identityModule/http/rest/guard/auth.guard';
 import { AlreadyExists } from '@sharedModule/core/exception/already-exists.exception';
 import { Response } from 'express';
 import { UpdateUserRequestDto } from '../dto/request/update-user-request.dto';
 import { NotFoundException } from '@sharedModule/core/exception/not-found.exception';
-import { PermissionGuard } from '../guard/permission.guard';
+import { Public } from '@sharedModule/auth/decorator/public.decorator';
+import { RequireOwnership } from '@sharedModule/auth/decorator/require-ownership.decorator';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userManagementService: UserManagementService) {}
 
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -62,9 +62,9 @@ export class UserController {
     }
   }
 
+  @RequireOwnership('id')
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard, PermissionGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async getUserById(
     @Param('id') userId: string,
@@ -94,9 +94,10 @@ export class UserController {
       throw error;
     }
   }
+
+  @RequireOwnership('id')
   @Patch(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AuthGuard, PermissionGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async updateUserById(
     @Param('id') userId: string,
@@ -117,19 +118,16 @@ export class UserController {
       throw error;
     }
   }
+
+  @RequireOwnership('id')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AuthGuard, PermissionGuard)
   @UsePipes(new ValidationPipe({ transform: true }))
   async deleteUserById(
     @Param('id') userId: string,
     @Res() res: Response,
   ): Promise<Response> {
-    try {
-      await this.userManagementService.deleteUser(userId);
-      return res.status(HttpStatus.NO_CONTENT).send();
-    } catch (error) {
-      throw error;
-    }
+    await this.userManagementService.deleteUser(userId);
+    return res.status(HttpStatus.NO_CONTENT).send();
   }
 }

@@ -10,6 +10,10 @@ export interface IdentityAuthenticateApi {
     userAuthenticated: { id: string; role: string },
     userId?: string | undefined,
   ): Promise<boolean>;
+  assertResourceAccess(
+    userAuthenticated: { id: string; role: string },
+    targetUserId: string,
+  ): Promise<void>;
 }
 
 export const IdentityAuthenticateApi = Symbol('IdentityAuthenticateApi');

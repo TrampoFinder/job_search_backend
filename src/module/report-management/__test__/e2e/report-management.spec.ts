@@ -3,7 +3,6 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
-import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -16,6 +15,8 @@ import { jobApplicationAppliedFactory } from '@testInfra/factory/job-application
 import { testDbClient } from '@testInfra/knex.database';
 import { Tables } from '@testInfra/enum/tables.enum';
 import { signInFactory } from '@testInfra/factory/sign-in.test-factory';
+import { e2eAuthImports, e2eAuthProviders } from '@testInfra/e2e-auth.setup';
+
 describe('ReportManagement (e2e)', () => {
   let module: TestingModule;
   let app: INestApplication;
@@ -27,7 +28,8 @@ describe('ReportManagement (e2e)', () => {
   let token: any;
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [ReportManagementModule],
+      imports: [...e2eAuthImports, ReportManagementModule],
+      providers: e2eAuthProviders,
     }).compile();
     app = module.createNestApplication();
     prisma = new PrismaClient();
@@ -209,7 +211,6 @@ describe('ReportManagement (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body.data[0]).toMatchObject({
         userId: user.id,
-        fullName: user.firstName + ' ' + user.lastName,
         totalApplications: 2,
         activeProcessCount: 2,
         statusCount: {
@@ -221,6 +222,7 @@ describe('ReportManagement (e2e)', () => {
           NOT_PROCESSING: 0,
         },
       });
+      expect(response.body.data[0].fullName).toBeUndefined();
     });
     it('returns a candidate with average applications by id', async () => {
       const userNotAdmin = userFactory.build({

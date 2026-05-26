@@ -8,10 +8,7 @@ import { AuthService } from './core/service/authentication.service';
 import { UserManagementService } from './core/service/user-management.service';
 import { AuthController } from './http/rest/controller/auth.controller';
 import { UserController } from './http/rest/controller/user.controller';
-import { IdentityPublicApiProvider } from './integration/provider/public-api.provider';
 import { UserRepository } from './persistence/repository/user.repository';
-import { APP_FILTER } from '@nestjs/core';
-import { DomainExceptionFilter } from '@sharedModule/integration/http/filter/domain-exception.filter';
 import { NotificationModule } from '@sharedModule/notification/notificiation.module';
 
 @Module({
@@ -28,16 +25,7 @@ import { NotificationModule } from '@sharedModule/notification/notificiation.mod
     NotificationModule,
   ],
   controllers: [AuthController, UserController],
-  providers: [
-    AuthService,
-    UserManagementService,
-    UserRepository,
-    IdentityPublicApiProvider,
-    {
-      provide: APP_FILTER,
-      useClass: DomainExceptionFilter,
-    },
-  ],
-  exports: [IdentityPublicApiProvider],
+  providers: [AuthService, UserManagementService, UserRepository],
+  exports: [AuthService, UserRepository],
 })
 export class IdentityModule {}

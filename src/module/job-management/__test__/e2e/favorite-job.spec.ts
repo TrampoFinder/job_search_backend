@@ -9,6 +9,7 @@ import { userFactory } from '@testInfra/factory/user.test-factory';
 import { jobFactory } from '@testInfra/factory/job.test-factory';
 import { signInFactory } from '@testInfra/factory/sign-in.test-factory';
 import FavoriteJobService from '@jobManagementModule/core/service/favorite-job.service';
+import { e2eAuthImports, e2eAuthProviders } from '@testInfra/e2e-auth.setup';
 
 describe('JobController (e2e)', () => {
   let module: TestingModule;
@@ -20,7 +21,8 @@ describe('JobController (e2e)', () => {
   let token: any;
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [JobManagementModule],
+      imports: [...e2eAuthImports, JobManagementModule],
+      providers: e2eAuthProviders,
     }).compile();
 
     app = module.createNestApplication();

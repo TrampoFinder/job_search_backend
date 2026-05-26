@@ -5,6 +5,7 @@ import { UserRepository } from '@identityModule/persistence/repository/user.repo
 import request from 'supertest';
 import { UserManagementService } from '../../core/service/user-management.service';
 import { AuthService } from '@identityModule/core/service/authentication.service';
+import { e2eAuthImports, e2eAuthProviders } from '@testInfra/e2e-auth.setup';
 
 describe('UserManagement (e2e)', () => {
   let module: TestingModule;
@@ -14,7 +15,8 @@ describe('UserManagement (e2e)', () => {
   let authService: AuthService;
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [IdentityModule],
+      imports: [...e2eAuthImports, IdentityModule],
+      providers: e2eAuthProviders,
     }).compile();
 
     app = module.createNestApplication();

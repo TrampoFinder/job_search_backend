@@ -4,12 +4,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Param,
   Post,
   Put,
   Query,
-  Req,
   Res,
   UsePipes,
   ValidationPipe,
@@ -19,33 +17,28 @@ import { CreateJobApplicationRequestDto } from '../dto/request/create-job-applic
 import { JobNotFoundException } from '@jobManagementModule/core/exception/job-not-found.exception';
 import JobApplicationModel from '@jobManagementModule/core/model/job-application.model';
 import { JobApplicationManagementService } from '@jobManagementModule/core/service/job-application-management.service';
-import { IdentityAuthenticateApi } from '@sharedModule/integration/interface/identity-integration.interface';
-import { AuthenticatedRequest } from '@sharedModule/integration/interface/authenticate-request.interface';
 import { UpdateJobApplicationRequestDto } from '../dto/request/update-job-application-request.dto';
+import { CurrentUser } from '@sharedModule/auth/decorator/current-user.decorator';
+import { RequireOwnership } from '@sharedModule/auth/decorator/require-ownership.decorator';
 
 @Controller('job-application')
 export class JobApplicationController {
   constructor(
-    @Inject(IdentityAuthenticateApi)
-    private readonly identityAuthenticateApi: IdentityAuthenticateApi,
     private readonly jobApplicationManagementService: JobApplicationManagementService,
   ) {}
+
   @Post('apply/:id')
   @UsePipes(new ValidationPipe({ transform: true }))
   async applyForJob(
     @Param('id') id: string,
     @Body() data: CreateJobApplicationRequestDto,
-    @Req() req: AuthenticatedRequest,
-    @Res()
-    res: Response,
+    @CurrentUser() user: { id: string; role: string },
+    @Res() res: Response,
   ): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      const authenticatedUser =
-        await this.identityAuthenticateApi.authenticate(token);
       const applyJob = await this.jobApplicationManagementService.applyForJob(
         id,
-        authenticatedUser.id,
+        user.id,
         data,
       );
 
@@ -61,10 +54,11 @@ export class JobApplicationController {
       throw error;
     }
   }
+
   @Get('history')
   @HttpCode(HttpStatus.OK)
   async getAllApplicationJobsByUserId(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: { id: string; role: string },
     @Query('page') page: string,
     @Query('pageSize') pageSize: string,
   ): Promise<{
@@ -74,40 +68,25 @@ export class JobApplicationController {
     previousPage: number | null;
     nextPage: number | null;
   }> {
-    const token = req.headers.authorization?.split(' ')[1];
     const pageNumber = parseInt(page) || 1;
     const pageSizeNumber = parseInt(pageSize) || 10;
-    const userAuthenticated =
-      await this.identityAuthenticateApi.authenticate(token);
-    // await this.identityAuthenticateApi.hasPermission(userAuthenticated);
-    const jobApplications =
-      await this.jobApplicationManagementService.getAllApplicationJobsByUserId(
-        userAuthenticated.id,
-        pageNumber,
-        pageSizeNumber,
-      );
-
-    return jobApplications;
+    return await this.jobApplicationManagementService.getAllApplicationJobsByUserId(
+      user.id,
+      pageNumber,
+      pageSizeNumber,
+    );
   }
+
+  @RequireOwnership('userId')
   @Put(':userId/:jobId/update')
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async updateJobApplication(
-    @Param('userId') userId: string,
     @Param('jobId') jobId: string,
     @Body() data: UpdateJobApplicationRequestDto,
-    @Req() req: AuthenticatedRequest,
-    @Res()
-    res: Response,
+    @Res() res: Response,
   ): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      const userAuthenticated =
-        await this.identityAuthenticateApi.authenticate(token);
-      await this.identityAuthenticateApi.hasPermission(
-        userAuthenticated,
-        userId,
-      );
       const updatedJobApplication =
         await this.jobApplicationManagementService.updateJobApplication(
           jobId,
